@@ -1,0 +1,126 @@
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { usersAPI, chatAPI } from '../services/api';
+import './UserCard.css';
+
+const UserCard = ({ user, showActions = true, onLike }) => {
+  const navigate = useNavigate();
+  const [liked, setLiked] = useState(user.liked_by_me || false);
+  const [loading, setLoading] = useState(false);
+
+  const handleLike = async () => {
+    if (loading) return;
+    
+    setLoading(true);
+    try {
+      const response = await usersAPI.likeUser(user.id);
+      setLiked(true);
+      if (response.data.is_mutual) {
+        alert('זה התאמה! 💚');
+      }
+      if (onLike) onLike();
+    } catch (error) {
+      alert(error.response?.data?.error || 'שגיאה בלייק');
+    }
+    setLoading(false);
+  };
+
+  const handleMessage = async () => {
+    try {
+      const response = await chatAPI.startChat(user.id);
+      navigate(`/chat/${response.data.chat.id}`);
+    } catch (error) {
+      alert('שגיאה בפתיחת צ'אט');
+    }
+  };
+
+  const handleViewProfile = () => {
+    navigate(`/user/${user.id}`);
+  };
+
+  const handleContactReferrer = async () => {
+    if (user.referred_by?.id) {
+      try {
+        const response = await chatAPI.startChat(user.referred_by.id);
+        navigate(`/chat/${response.data.chat.id}`);
+      } catch (error) {
+        alert('שגיאה בפתיחת צ'אט עם הממליץ');
+      }
+    }
+  };
+
+  return (
+    <div className="user-card">
+      <div className="user-card-image">
+        {user.profile_image ? (
+          <img src={user.profile_image} alt={user.full_name} />
+        ) : (
+          <div className="user-card-placeholder">
+            {user.full_name?.[0] || '👤'}
+          </div>
+        )}
+      </div>
+      
+      <div className="user-card-content">
+        <h3 className="user-card-name">{user.full_name}</h3>
+        
+        <div className="user-card-info">
+          {user.age && <span>גיל: {user.age}</span>}
+          {user.location && <span>📍 {user.location}</span>}
+          {user.gender && <span>{user.gender === 'male' ? '♂' : user.gender === 'female' ? '♀' : '⚥'}</span>}
+        </div>
+        
+        {user.bio && (
+          <p className="user-card-bio">{user.bio}</p>
+        )}
+        
+        {user.referred_by && (
+          <div className="user-card-referrer">
+            <span>הומלץ על ידי: </span>
+            <button 
+              className="referrer-link"
+              onClick={handleContactReferrer}
+            >
+              {user.referred_by.name} 💬
+            </button>
+          </div>
+        )}
+        
+        {showActions && (
+          <div className="user-card-actions">
+            <button 
+              className="btn btn-primary"
+              onClick={handleViewProfile}
+            >
+              צפה בפרופיל
+            </button>
+            
+            {!liked ? (
+              <button 
+                className="btn btn-like"
+                onClick={handleLike}
+                disabled={loading}
+              >
+                {loading ? '...' : '❤️ לייק'}
+              </button>
+            ) : (
+              <button className="btn btn-liked" disabled>
+                ✓ אהבתי
+              </button>
+            )}
+            
+            <button 
+              className="btn btn-secondary"
+              onClick={handleMessage}
+            >
+              💬 שלח הודעה
+            </button>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+export default UserCard;
+
