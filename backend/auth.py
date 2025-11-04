@@ -95,13 +95,26 @@ def login():
             return jsonify({'error': 'Email and password are required'}), 400
         
         # Encrypt email to search in database
-        email_encrypted = encryption_service.encrypt(data['email'].lower().strip())
+        email_to_search = data['email'].lower().strip()
+        email_encrypted = encryption_service.encrypt(email_to_search)
+        
+        # Debug: Check all users
+        all_users = User.query.all()
+        print(f"[LOGIN DEBUG] Total users in DB: {len(all_users)}")
+        print(f"[LOGIN DEBUG] Email to search (plain): {email_to_search}")
+        print(f"[LOGIN DEBUG] Email encrypted (to find): {email_encrypted[:60]}...")
+        
+        # Debug: Show first user's encrypted email if exists
+        if all_users:
+            first_user = all_users[0]
+            print(f"[LOGIN DEBUG] First user's encrypted email: {first_user.email_encrypted[:60]}...")
+            print(f"[LOGIN DEBUG] Are they equal? {email_encrypted == first_user.email_encrypted}")
         
         # Find user
         user = User.query.filter_by(email_encrypted=email_encrypted).first()
         
         if not user:
-            print(f"[LOGIN DEBUG] User not found for email: {data['email']}")
+            print(f"[LOGIN DEBUG] ❌ User not found for email: {data['email']}")
             return jsonify({'error': 'Invalid email or password'}), 401
         
         print(f"[LOGIN DEBUG] User found: ID={user.id}")
