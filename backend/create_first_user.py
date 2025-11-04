@@ -27,12 +27,15 @@ def create_first_user():
         # Hash password
         password_hash = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
         
-        # Encrypt sensitive fields
-        email_encrypted = encryption_service.encrypt(email.lower().strip())
+        # Encrypt and hash email
+        email_normalized = email.lower().strip()
+        email_hash = encryption_service.hash_email(email_normalized)
+        email_encrypted = encryption_service.encrypt(email_normalized)
         full_name_encrypted = encryption_service.encrypt(full_name)
         
         # Create user
         user = User(
+            email_hash=email_hash,
             email_encrypted=email_encrypted,
             full_name_encrypted=full_name_encrypted,
             password_hash=password_hash

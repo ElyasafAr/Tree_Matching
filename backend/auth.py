@@ -23,9 +23,10 @@ def register():
         if not referrer:
             return jsonify({'error': 'Invalid referral code'}), 400
         
-        # Check if email already exists (need to check encrypted emails)
-        email_to_check = encryption_service.encrypt(data['email'].lower().strip())
-        existing_user = User.query.filter_by(email_encrypted=email_to_check).first()
+        # Check if email already exists (check by hash)
+        email_normalized = data['email'].lower().strip()
+        email_hash = encryption_service.hash_email(email_normalized)
+        existing_user = User.query.filter_by(email_hash=email_hash).first()
         if existing_user:
             return jsonify({'error': 'Email already registered'}), 400
         
@@ -33,13 +34,14 @@ def register():
         password_hash = bcrypt.hashpw(data['password'].encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
         
         # Encrypt sensitive fields
-        email_encrypted = encryption_service.encrypt(data['email'].lower().strip())
+        email_encrypted = encryption_service.encrypt(email_normalized)
         full_name_encrypted = encryption_service.encrypt(data['full_name'])
         phone_encrypted = encryption_service.encrypt(data.get('phone', '')) if data.get('phone') else None
         address_encrypted = encryption_service.encrypt(data.get('address', '')) if data.get('address') else None
         
         # Create new user
         new_user = User(
+            email_hash=email_hash,
             email_encrypted=email_encrypted,
             full_name_encrypted=full_name_encrypted,
             phone_encrypted=phone_encrypted,
@@ -94,27 +96,19 @@ def login():
         if not data.get('email') or not data.get('password'):
             return jsonify({'error': 'Email and password are required'}), 400
         
-        # Encrypt email to search in database
-        email_to_search = data['email'].lower().strip()
-        email_encrypted = encryption_service.encrypt(email_to_search)
+        # Hash email to search in database (deterministic)
+        email_normalized = data['email'].lower().strip()
+        email_hash = encryption_service.hash_email(email_normalized)
         
-        # Debug: Check all users
-        all_users = User.query.all()
-        print(f"[LOGIN DEBUG] Total users in DB: {len(all_users)}")
-        print(f"[LOGIN DEBUG] Email to search (plain): {email_to_search}")
-        print(f"[LOGIN DEBUG] Email encrypted (to find): {email_encrypted[:60]}...")
+        # Debug logging
+        print(f"[LOGIN DEBUG] Email to search: {email_normalized}")
+        print(f"[LOGIN DEBUG] Email hash: {email_hash}")
         
-        # Debug: Show first user's encrypted email if exists
-        if all_users:
-            first_user = all_users[0]
-            print(f"[LOGIN DEBUG] First user's encrypted email: {first_user.email_encrypted[:60]}...")
-            print(f"[LOGIN DEBUG] Are they equal? {email_encrypted == first_user.email_encrypted}")
-        
-        # Find user
-        user = User.query.filter_by(email_encrypted=email_encrypted).first()
+        # Find user by email hash
+        user = User.query.filter_by(email_hash=email_hash).first()
         
         if not user:
-            print(f"[LOGIN DEBUG] ❌ User not found for email: {data['email']}")
+            print(f"[LOGIN DEBUG] ❌ User not found for email: {email_normalized}")
             return jsonify({'error': 'Invalid email or password'}), 401
         
         print(f"[LOGIN DEBUG] User found: ID={user.id}")

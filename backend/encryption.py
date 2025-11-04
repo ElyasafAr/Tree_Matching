@@ -1,5 +1,6 @@
 from cryptography.fernet import Fernet
 from config import Config
+import hashlib
 
 class EncryptionService:
     """Service for encrypting and decrypting sensitive data"""
@@ -30,6 +31,14 @@ class EncryptionService:
         
         decrypted_bytes = self.cipher.decrypt(encrypted_data.encode())
         return decrypted_bytes.decode()
+    
+    def hash_email(self, email: str) -> str:
+        """Create a deterministic hash of email for lookups"""
+        if not email:
+            return None
+        
+        # Use SHA256 for deterministic hashing
+        return hashlib.sha256(email.encode()).hexdigest()
 
 # Singleton instance
 encryption_service = EncryptionService()

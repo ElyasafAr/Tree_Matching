@@ -13,6 +13,23 @@ const SecretAdminInit = () => {
 
   const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
+  const handleMigration = async () => {
+    setLoading(true);
+    setError('');
+    
+    try {
+      const response = await axios.post(`${API_URL}/admin/migrate-add-email-hash`, {
+        admin_password: adminPassword || 'TreeMatching2024!'
+      });
+      alert('✅ Migration successful! Column added.');
+      setResult(response.data);
+    } catch (err) {
+      setError(err.response?.data?.error || 'Migration failed');
+    }
+    
+    setLoading(false);
+  };
+
   const handleReset = async () => {
     if (!window.confirm('⚠️ WARNING: This will DELETE ALL DATA! Continue?')) {
       return;
@@ -62,6 +79,23 @@ const SecretAdminInit = () => {
         <p style={{ fontSize: '0.9rem', color: '#666' }}>
           This page is for initial system setup only. Do not share this URL!
         </p>
+
+        <hr style={{ margin: '20px 0' }} />
+
+        <div style={{ marginBottom: '30px' }}>
+          <h3>Step 0: Run Migration (First Time Only)</h3>
+          <p style={{ fontSize: '0.85rem', color: '#666', marginBottom: '10px' }}>
+            Adds email_hash column to database. Run this once before creating users.
+          </p>
+          <button 
+            onClick={handleMigration}
+            className="auth-button"
+            style={{ backgroundColor: '#3498db' }}
+            disabled={loading}
+          >
+            🔧 Run Migration
+          </button>
+        </div>
 
         <hr style={{ margin: '20px 0' }} />
 

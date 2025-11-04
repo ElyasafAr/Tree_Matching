@@ -10,8 +10,11 @@ class User(db.Model):
     
     id = db.Column(db.Integer, primary_key=True)
     
-    # Encrypted fields
-    email_encrypted = db.Column(db.Text, unique=True, nullable=False)
+    # Email hash for lookups (deterministic)
+    email_hash = db.Column(db.String(64), unique=True, nullable=False, index=True)
+    
+    # Encrypted fields (for secure storage)
+    email_encrypted = db.Column(db.Text, nullable=False)
     full_name_encrypted = db.Column(db.Text, nullable=False)
     phone_encrypted = db.Column(db.Text, nullable=True)
     address_encrypted = db.Column(db.Text, nullable=True)

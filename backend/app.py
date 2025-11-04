@@ -32,6 +32,43 @@ def create_app():
             'message': 'Tree Matching API is running'
         })
     
+    # TEMPORARY: Migration endpoint (REMOVE AFTER USE!)
+    @app.route('/admin/migrate-add-email-hash', methods=['POST'])
+    def migrate_add_email_hash():
+        """Add email_hash column to users table"""
+        try:
+            from sqlalchemy import text
+            import os
+            
+            data = request.get_json() or {}
+            admin_password = os.getenv('ADMIN_SETUP_PASSWORD', 'TreeMatching2024!')
+            
+            if data.get('admin_password') != admin_password:
+                return jsonify({'error': 'Invalid admin password'}), 403
+            
+            # Add column
+            db.session.execute(text("""
+                ALTER TABLE users 
+                ADD COLUMN IF NOT EXISTS email_hash VARCHAR(64);
+            """))
+            
+            # Create index
+            db.session.execute(text("""
+                CREATE INDEX IF NOT EXISTS idx_users_email_hash 
+                ON users(email_hash);
+            """))
+            
+            db.session.commit()
+            
+            return jsonify({
+                'status': 'success',
+                'message': 'Migration completed! Column added.'
+            }), 200
+            
+        except Exception as e:
+            db.session.rollback()
+            return jsonify({'error': str(e)}), 500
+    
     # TEMPORARY: Reset database endpoint (REMOVE AFTER USE!)
     @app.route('/admin/reset-database-DANGER', methods=['POST'])
     def reset_database():
@@ -87,12 +124,15 @@ def create_app():
             # Hash password
             password_hash = bcrypt.hashpw(data['password'].encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
             
-            # Encrypt sensitive fields
-            email_encrypted = encryption_service.encrypt(data['email'].lower().strip())
+            # Encrypt and hash email
+            email_normalized = data['email'].lower().strip()
+            email_hash = encryption_service.hash_email(email_normalized)
+            email_encrypted = encryption_service.encrypt(email_normalized)
             full_name_encrypted = encryption_service.encrypt(data['full_name'])
             
             # Create user
             user = User(
+                email_hash=email_hash,
                 email_encrypted=email_encrypted,
                 full_name_encrypted=full_name_encrypted,
                 password_hash=password_hash
