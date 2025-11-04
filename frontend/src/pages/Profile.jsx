@@ -61,7 +61,64 @@ const Profile = () => {
     return (
       <div className="profile-container">
         <div className="profile-view">
-          <UserCard user={user} showActions={true} />
+          <div className="profile-header">
+            <h1>פרופיל משתמש</h1>
+          </div>
+
+          <div className="profile-info">
+            {/* Display UserCard for quick actions */}
+            <div style={{ marginBottom: '2rem' }}>
+              <UserCard user={user} showActions={true} />
+            </div>
+
+            {/* Full profile information */}
+            <div className="info-section">
+              <h2>📋 פרטים</h2>
+              <div className="info-grid">
+                <div className="info-item">
+                  <strong>שם:</strong> {user.full_name}
+                </div>
+                {user.age && (
+                  <div className="info-item">
+                    <strong>גיל:</strong> {user.age}
+                  </div>
+                )}
+                {user.gender && (
+                  <div className="info-item">
+                    <strong>מגדר:</strong> {user.gender === 'male' ? 'זכר' : user.gender === 'female' ? 'נקבה' : 'אחר'}
+                  </div>
+                )}
+                {user.location && (
+                  <div className="info-item">
+                    <strong>מיקום:</strong> {user.location}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {user.bio && (
+              <div className="info-section">
+                <h2>💭 על עצמי</h2>
+                <p style={{ whiteSpace: 'pre-wrap' }}>{user.bio}</p>
+              </div>
+            )}
+
+            {user.interests && (
+              <div className="info-section">
+                <h2>🎯 תחומי עניין</h2>
+                <p>{user.interests}</p>
+              </div>
+            )}
+
+            {user.referred_by && (
+              <div className="info-section">
+                <h2>👤 הומלץ על ידי</h2>
+                <div className="referrer-info">
+                  <p><strong>{user.referred_by.name}</strong></p>
+                </div>
+              </div>
+            )}
+          </div>
         </div>
       </div>
     );
