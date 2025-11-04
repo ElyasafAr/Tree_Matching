@@ -1,8 +1,9 @@
 import bcrypt
 from flask import Blueprint, request, jsonify
-from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity
+from flask_jwt_extended import create_access_token, jwt_required
 from models import db, User, Referral
 from encryption import encryption_service
+from utils import get_current_user_id
 
 auth_bp = Blueprint('auth', __name__, url_prefix='/auth')
 
@@ -75,8 +76,8 @@ def register():
         db.session.add(referral)
         db.session.commit()
         
-        # Create access token
-        access_token = create_access_token(identity=new_user.id)
+        # Create access token (identity must be string)
+        access_token = create_access_token(identity=str(new_user.id))
         
         # Prepare user data with decrypted fields
         user_data = new_user.to_dict()
@@ -127,8 +128,8 @@ def login():
         if not password_match:
             return jsonify({'error': 'Invalid email or password'}), 401
         
-        # Create access token
-        access_token = create_access_token(identity=user.id)
+        # Create access token (identity must be string)
+        access_token = create_access_token(identity=str(user.id))
         
         # Prepare user data with decrypted fields
         user_data = user.to_dict()
@@ -160,7 +161,7 @@ def login():
 def get_current_user():
     """Get current logged-in user information"""
     try:
-        current_user_id = get_jwt_identity()
+        current_user_id = get_current_user_id()
         user = User.query.get(current_user_id)
         
         if not user:

@@ -1,7 +1,8 @@
 from flask import Blueprint, request, jsonify
-from flask_jwt_extended import jwt_required, get_jwt_identity
+from flask_jwt_extended import jwt_required
 from models import db, User, Referral
 from encryption import encryption_service
+from utils import get_current_user_id
 
 referrals_bp = Blueprint('referrals', __name__, url_prefix='/referrals')
 
@@ -10,7 +11,7 @@ referrals_bp = Blueprint('referrals', __name__, url_prefix='/referrals')
 def get_my_referrals():
     """Get all users that current user has referred"""
     try:
-        current_user_id = get_jwt_identity()
+        current_user_id = get_current_user_id()
         
         # Get all referrals made by this user
         referrals = Referral.query.filter_by(referrer_id=current_user_id).all()
@@ -41,7 +42,7 @@ def get_my_referrals():
 def get_referral_tree():
     """Get referral tree starting from current user"""
     try:
-        current_user_id = get_jwt_identity()
+        current_user_id = get_current_user_id()
         
         def build_tree(user_id, depth=0, max_depth=3):
             """Recursively build referral tree"""
@@ -83,7 +84,7 @@ def get_referral_tree():
 def get_my_referrer():
     """Get the user who referred the current user"""
     try:
-        current_user_id = get_jwt_identity()
+        current_user_id = get_current_user_id()
         
         # Find referral record
         referral = Referral.query.filter_by(referred_id=current_user_id).first()
@@ -117,7 +118,7 @@ def get_my_referrer():
 def get_referral_chain(user_id):
     """Get the referral chain from a user back to the root"""
     try:
-        current_user_id = get_jwt_identity()
+        current_user_id = get_current_user_id()
         
         def build_chain(uid, chain=None, max_depth=10):
             """Build chain of referrers going backwards"""
@@ -173,7 +174,7 @@ def get_referral_chain(user_id):
 def get_referral_stats():
     """Get referral statistics for current user"""
     try:
-        current_user_id = get_jwt_identity()
+        current_user_id = get_current_user_id()
         
         # Count direct referrals
         direct_count = Referral.query.filter_by(referrer_id=current_user_id).count()

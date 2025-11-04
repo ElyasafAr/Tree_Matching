@@ -1,7 +1,8 @@
 from flask import Blueprint, request, jsonify
-from flask_jwt_extended import jwt_required, get_jwt_identity
+from flask_jwt_extended import jwt_required
 from models import db, User, Match, Referral
 from encryption import encryption_service
+from utils import get_current_user_id
 from sqlalchemy import or_, and_
 
 users_bp = Blueprint('users', __name__, url_prefix='/users')
@@ -11,7 +12,7 @@ users_bp = Blueprint('users', __name__, url_prefix='/users')
 def get_user_profile(user_id):
     """Get user profile by ID"""
     try:
-        current_user_id = get_jwt_identity()
+        current_user_id = get_current_user_id()
         user = User.query.get(user_id)
         
         if not user:
@@ -51,7 +52,7 @@ def get_user_profile(user_id):
 def search_users():
     """Search users with filters"""
     try:
-        current_user_id = get_jwt_identity()
+        current_user_id = get_current_user_id()
         
         # Get query parameters
         query = request.args.get('q', '')
@@ -128,7 +129,7 @@ def search_users():
 def like_user(user_id):
     """Like/match with another user"""
     try:
-        current_user_id = get_jwt_identity()
+        current_user_id = get_current_user_id()
         
         if current_user_id == user_id:
             return jsonify({'error': 'Cannot like yourself'}), 400
@@ -181,7 +182,7 @@ def like_user(user_id):
 def get_matches():
     """Get all mutual matches for current user"""
     try:
-        current_user_id = get_jwt_identity()
+        current_user_id = get_current_user_id()
         
         # Get all mutual matches
         matches = Match.query.filter(
@@ -211,7 +212,7 @@ def get_matches():
 def update_profile():
     """Update current user's profile"""
     try:
-        current_user_id = get_jwt_identity()
+        current_user_id = get_current_user_id()
         user = User.query.get(current_user_id)
         
         if not user:

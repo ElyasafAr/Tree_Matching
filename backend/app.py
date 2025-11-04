@@ -99,9 +99,10 @@ def create_app():
         """Create first user without referral code - requires admin password"""
         try:
             import bcrypt
+            import os
             from models import User
             from encryption import encryption_service
-            import os
+            from flask_jwt_extended import create_access_token
             
             data = request.get_json()
             

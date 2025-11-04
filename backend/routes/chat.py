@@ -1,7 +1,8 @@
 from flask import Blueprint, request, jsonify
-from flask_jwt_extended import jwt_required, get_jwt_identity
+from flask_jwt_extended import jwt_required
 from models import db, User, Chat, Message
 from encryption import encryption_service
+from utils import get_current_user_id
 from datetime import datetime
 
 chat_bp = Blueprint('chat', __name__, url_prefix='/chat')
@@ -11,7 +12,7 @@ chat_bp = Blueprint('chat', __name__, url_prefix='/chat')
 def get_conversations():
     """Get all conversations for current user"""
     try:
-        current_user_id = get_jwt_identity()
+        current_user_id = get_current_user_id()
         
         # Find all chats where user is participant
         chats = Chat.query.filter(
@@ -45,7 +46,7 @@ def get_conversations():
 def get_messages(chat_id):
     """Get all messages in a chat"""
     try:
-        current_user_id = get_jwt_identity()
+        current_user_id = get_current_user_id()
         
         # Verify user is part of this chat
         chat = Chat.query.get(chat_id)
@@ -92,7 +93,7 @@ def get_messages(chat_id):
 def send_message():
     """Send a message to another user"""
     try:
-        current_user_id = get_jwt_identity()
+        current_user_id = get_current_user_id()
         data = request.get_json()
         
         if not data.get('recipient_id') or not data.get('content'):
@@ -151,7 +152,7 @@ def send_message():
 def start_chat(user_id):
     """Start a chat with another user (or get existing chat)"""
     try:
-        current_user_id = get_jwt_identity()
+        current_user_id = get_current_user_id()
         
         if current_user_id == user_id:
             return jsonify({'error': 'Cannot chat with yourself'}), 400
@@ -198,7 +199,7 @@ def start_chat(user_id):
 def get_unread_count():
     """Get count of unread messages for current user"""
     try:
-        current_user_id = get_jwt_identity()
+        current_user_id = get_current_user_id()
         
         # Get all chats where user is participant
         chats = Chat.query.filter(
