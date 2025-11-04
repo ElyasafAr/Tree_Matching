@@ -39,6 +39,13 @@ def register():
         phone_encrypted = encryption_service.encrypt(data.get('phone', '')) if data.get('phone') else None
         address_encrypted = encryption_service.encrypt(data.get('address', '')) if data.get('address') else None
         
+        # Clean optional fields - convert empty strings to None
+        age = data.get('age')
+        age = int(age) if age and str(age).strip() else None
+        
+        location = data.get('location')
+        location = location.strip() if location and location.strip() else None
+        
         # Create new user
         new_user = User(
             email_hash=email_hash,
@@ -47,12 +54,12 @@ def register():
             phone_encrypted=phone_encrypted,
             address_encrypted=address_encrypted,
             password_hash=password_hash,
-            age=data.get('age'),
-            gender=data.get('gender'),
-            location=data.get('location'),
-            interests=data.get('interests'),
-            bio=data.get('bio'),
-            profile_image=data.get('profile_image')
+            age=age,
+            gender=data.get('gender') if data.get('gender') else None,
+            location=location,
+            interests=data.get('interests') if data.get('interests') else None,
+            bio=data.get('bio') if data.get('bio') else None,
+            profile_image=data.get('profile_image') if data.get('profile_image') else None
         )
         
         db.session.add(new_user)
