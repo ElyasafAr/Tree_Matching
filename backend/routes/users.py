@@ -65,6 +65,12 @@ def search_users():
         # Build query
         users_query = User.query.filter(User.id != current_user_id)
         
+        # Debug
+        total_users = User.query.count()
+        print(f"[SEARCH DEBUG] Total users in DB: {total_users}")
+        print(f"[SEARCH DEBUG] Current user ID: {current_user_id}")
+        print(f"[SEARCH DEBUG] Filters - gender: {gender}, min_age: {min_age}, max_age: {max_age}, location: {location}")
+        
         # Apply filters
         if gender:
             users_query = users_query.filter(User.gender == gender)
@@ -81,6 +87,9 @@ def search_users():
         # Pagination
         pagination = users_query.paginate(page=page, per_page=per_page, error_out=False)
         users = pagination.items
+        
+        print(f"[SEARCH DEBUG] Users found after filters: {len(users)}")
+        print(f"[SEARCH DEBUG] Total matching users: {pagination.total}")
         
         # Prepare response
         users_data = []
