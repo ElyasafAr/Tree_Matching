@@ -11,6 +11,7 @@ import Profile from './pages/Profile';
 import Matches from './pages/Matches';
 import Chat from './pages/Chat';
 import Referrals from './pages/Referrals';
+import SecretAdminInit from './pages/SecretAdminInit';
 
 import './App.css';
 
@@ -22,6 +23,9 @@ function App() {
           <Navbar />
           <div className="app-content">
             <Routes>
+              {/* Secret admin route - DO NOT SHARE! */}
+              <Route path="/init-sys-tm2024-secret" element={<SecretAdminInit />} />
+              
               {/* Public routes */}
               <Route path="/login" element={<Login />} />
               <Route path="/register" element={<Register />} />

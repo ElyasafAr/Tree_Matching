@@ -32,6 +32,87 @@ def create_app():
             'message': 'Tree Matching API is running'
         })
     
+    # TEMPORARY: Reset database endpoint (REMOVE AFTER USE!)
+    @app.route('/admin/reset-database-DANGER', methods=['POST'])
+    def reset_database():
+        """WARNING: Deletes ALL data from database!"""
+        try:
+            from models import User, Referral, Chat, Message, Match
+            
+            # Delete all records
+            Message.query.delete()
+            Chat.query.delete()
+            Match.query.delete()
+            Referral.query.delete()
+            User.query.delete()
+            
+            db.session.commit()
+            
+            return jsonify({
+                'status': 'success',
+                'message': 'All data deleted! Now create first user.'
+            }), 200
+        except Exception as e:
+            db.session.rollback()
+            return jsonify({'error': str(e)}), 500
+    
+    # TEMPORARY: Create first user endpoint with admin password (REMOVE AFTER USE!)
+    @app.route('/api/secret-initialize-system', methods=['POST'])
+    def create_first_user_endpoint():
+        """Create first user without referral code - requires admin password"""
+        try:
+            import bcrypt
+            from models import User
+            from encryption import encryption_service
+            import os
+            
+            data = request.get_json()
+            
+            # Require admin password
+            admin_password = os.getenv('ADMIN_SETUP_PASSWORD', 'TreeMatching2024!')
+            if data.get('admin_password') != admin_password:
+                return jsonify({'error': 'Invalid admin password'}), 403
+            
+            # Validate
+            if not data.get('email') or not data.get('password') or not data.get('full_name'):
+                return jsonify({'error': 'Email, password, and full_name required'}), 400
+            
+            # Check if users exist
+            existing_users = User.query.count()
+            if existing_users > 0:
+                return jsonify({
+                    'error': f'System already initialized. {existing_users} user(s) exist.'
+                }), 400
+            
+            # Hash password
+            password_hash = bcrypt.hashpw(data['password'].encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
+            
+            # Encrypt sensitive fields
+            email_encrypted = encryption_service.encrypt(data['email'].lower().strip())
+            full_name_encrypted = encryption_service.encrypt(data['full_name'])
+            
+            # Create user
+            user = User(
+                email_encrypted=email_encrypted,
+                full_name_encrypted=full_name_encrypted,
+                password_hash=password_hash
+            )
+            
+            db.session.add(user)
+            db.session.commit()
+            
+            return jsonify({
+                'status': 'success',
+                'message': 'First user created successfully!',
+                'referral_code': user.referral_code,
+                'user_id': user.id,
+                'email': data['email']
+            }), 201
+            
+        except Exception as e:
+            db.session.rollback()
+            return jsonify({'error': str(e)}), 500
+    
     @app.route('/api/health')
     def api_health():
         return jsonify({
