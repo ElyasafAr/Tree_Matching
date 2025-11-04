@@ -22,15 +22,29 @@ const Home = () => {
   const loadUsers = async () => {
     setLoading(true);
     try {
-      const params = { ...filters, page, per_page: 12 };
-      // Remove empty filters
-      Object.keys(params).forEach(key => {
-        if (!params[key]) delete params[key];
-      });
+      const params = { page, per_page: 12 };
+      
+      // Add only non-empty filters
+      if (filters.gender && filters.gender.trim()) {
+        params.gender = filters.gender;
+      }
+      if (filters.min_age && filters.min_age !== '') {
+        params.min_age = filters.min_age;
+      }
+      if (filters.max_age && filters.max_age !== '') {
+        params.max_age = filters.max_age;
+      }
+      if (filters.location && filters.location.trim()) {
+        params.location = filters.location;
+      }
+      
+      console.log('[SEARCH] Sending params:', params);
       
       const response = await usersAPI.search(params);
       setUsers(response.data.users);
       setTotalPages(response.data.pagination.pages);
+      
+      console.log('[SEARCH] Received users:', response.data.users.length);
     } catch (error) {
       console.error('Error loading users:', error);
     }
