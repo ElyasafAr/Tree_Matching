@@ -125,6 +125,22 @@
 }
 
 @media (max-width: 768px) {
+  .profile-container {
+    padding: var(--spacing-xl) var(--spacing-md);
+  }
+
+  .profile-header h1 {
+    font-size: var(--font-size-2xl);
+  }
+
+  .profile-view, .profile-edit {
+    padding: var(--spacing-xl);
+  }
+
+  .info-section h2 {
+    font-size: var(--font-size-xl);
+  }
+
   .info-grid {
     grid-template-columns: 1fr;
   }
@@ -132,7 +148,46 @@
   .profile-header {
     flex-direction: column;
     align-items: flex-start;
-    gap: 1rem;
+    gap: var(--spacing-md);
+  }
+
+  .referral-code {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .referral-code code {
+    font-size: var(--font-size-xl);
+  }
+
+  .form-actions {
+    flex-direction: column;
+  }
+
+  .form-actions .btn {
+    width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .profile-container {
+    padding: var(--spacing-md) var(--spacing-sm);
+  }
+
+  .profile-view, .profile-edit {
+    padding: var(--spacing-md);
+  }
+
+  .profile-header h1 {
+    font-size: var(--font-size-xl);
+  }
+
+  .info-section h2 {
+    font-size: var(--font-size-lg);
+  }
+
+  .referral-code code {
+    font-size: var(--font-size-lg);
   }
 }
 

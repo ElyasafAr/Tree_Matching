@@ -234,10 +234,77 @@
 @media (max-width: 768px) {
   .chat-container {
     grid-template-columns: 1fr;
+    height: calc(100vh - 70px);
+    border-radius: 0;
+    margin: 0;
   }
   
   .chat-sidebar {
     display: none; /* Show only chat on mobile, improve later with routing */
+  }
+
+  .chat-header {
+    padding: var(--spacing-md);
+  }
+
+  .chat-header h3 {
+    font-size: var(--font-size-lg);
+  }
+
+  .messages-container {
+    padding: var(--spacing-md);
+  }
+
+  .message {
+    max-width: 85%;
+  }
+
+  .message-content {
+    padding: var(--spacing-sm) var(--spacing-md);
+    font-size: var(--font-size-sm);
+  }
+
+  .message-form {
+    padding: var(--spacing-md);
+    gap: var(--spacing-sm);
+  }
+
+  .message-input {
+    padding: var(--spacing-sm) var(--spacing-md);
+    font-size: var(--font-size-sm);
+  }
+
+  .send-button {
+    padding: var(--spacing-sm) var(--spacing-lg);
+    font-size: var(--font-size-sm);
+  }
+}
+
+@media (max-width: 480px) {
+  .chat-container {
+    height: calc(100vh - 60px);
+  }
+
+  .chat-header {
+    padding: var(--spacing-sm);
+  }
+
+  .messages-container {
+    padding: var(--spacing-sm);
+    gap: var(--spacing-sm);
+  }
+
+  .message {
+    max-width: 90%;
+  }
+
+  .message-form {
+    padding: var(--spacing-sm);
+  }
+
+  .send-button {
+    padding: var(--spacing-sm) var(--spacing-md);
+    font-size: 0.75rem;
   }
 }
 

@@ -159,3 +159,46 @@
   transform: none;
 }
 
+@media (max-width: 768px) {
+  .user-card-content {
+    padding: var(--spacing-lg);
+  }
+
+  .user-card-name {
+    font-size: var(--font-size-xl);
+  }
+
+  .user-card-info {
+    font-size: 0.8rem;
+    gap: var(--spacing-sm);
+  }
+
+  .user-card-bio {
+    font-size: var(--font-size-sm);
+  }
+
+  .user-card-actions {
+    flex-direction: column;
+    gap: var(--spacing-sm);
+  }
+
+  .btn {
+    min-width: 100%;
+    padding: 0.75rem 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .user-card-content {
+    padding: var(--spacing-md);
+  }
+
+  .user-card-image {
+    height: 180px;
+  }
+
+  .user-card-name {
+    font-size: var(--font-size-lg);
+  }
+}
+

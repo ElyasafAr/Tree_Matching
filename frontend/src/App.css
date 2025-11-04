@@ -131,3 +131,36 @@ textarea.form-input {
 ::-webkit-scrollbar-thumb:hover {
   background: var(--color-text-secondary);
 }
+
+/* Mobile Responsive Styles */
+@media (max-width: 768px) {
+  body {
+    font-size: 14px;
+  }
+
+  .btn {
+    padding: 0.625rem 1.25rem;
+    font-size: var(--font-size-sm);
+  }
+
+  .form-input {
+    padding: 0.75rem 0.875rem;
+    font-size: var(--font-size-sm);
+  }
+
+  .loading {
+    font-size: var(--font-size-lg);
+    padding: 2rem 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .btn {
+    padding: 0.5rem 1rem;
+    font-size: 0.875rem;
+  }
+
+  .form-input {
+    padding: 0.625rem 0.75rem;
+  }
+}
