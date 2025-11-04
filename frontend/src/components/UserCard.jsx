@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { usersAPI, chatAPI } from '../services/api';
+import { usersAPI, chatAPI, uploadAPI } from '../services/api';
 import './UserCard.css';
 
 const UserCard = ({ user, showActions = true, onLike }) => {
@@ -59,7 +59,7 @@ const UserCard = ({ user, showActions = true, onLike }) => {
     <div className="user-card">
       <div className="user-card-image">
         {user.profile_image ? (
-          <img src={user.profile_image} alt={user.full_name} />
+          <img src={uploadAPI.getImageUrl(user.profile_image)} alt={user.full_name} />
         ) : (
           <div className="user-card-placeholder">
             {user.full_name?.[0] || '👤'}

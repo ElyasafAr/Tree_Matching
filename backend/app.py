@@ -7,6 +7,7 @@ from auth import auth_bp
 from routes.users import users_bp
 from routes.chat import chat_bp
 from routes.referrals import referrals_bp
+from routes.upload import upload_bp
 
 def create_app():
     """Application factory for Flask app"""
@@ -23,6 +24,7 @@ def create_app():
     app.register_blueprint(users_bp)
     app.register_blueprint(chat_bp)
     app.register_blueprint(referrals_bp)
+    app.register_blueprint(upload_bp)
     
     # Health check endpoint
     @app.route('/')

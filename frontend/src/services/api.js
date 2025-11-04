@@ -58,5 +58,24 @@ export const referralsAPI = {
   getStats: () => api.get('/referrals/stats'),
 };
 
+// Upload endpoints
+export const uploadAPI = {
+  uploadProfileImage: (file) => {
+    const formData = new FormData();
+    formData.append('file', file);
+    return api.post('/upload/profile-image', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+  },
+  deleteProfileImage: () => api.delete('/upload/profile-image'),
+  getImageUrl: (imagePath) => {
+    if (!imagePath) return null;
+    if (imagePath.startsWith('http')) return imagePath;
+    return `${API_BASE_URL}${imagePath}`;
+  },
+};
+
 export default api;
 
