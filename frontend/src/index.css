@@ -1,11 +1,17 @@
+/* Import Google Fonts for Hebrew */
+@import url('https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;600;700&family=Assistant:wght@400;500;600;700&family=Rubik:wght@400;500;600;700&display=swap');
+
+/* Import design system variables */
+@import './variables.css';
+
 :root {
-  font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
-  line-height: 1.5;
-  font-weight: 400;
+  font-family: var(--font-primary);
+  line-height: var(--line-height-relaxed);
+  font-weight: var(--font-weight-normal);
 
   color-scheme: light;
-  color: rgba(0, 0, 0, 0.87);
-  background-color: #f5f5f5;
+  color: var(--color-text-primary);
+  background-color: var(--color-bg-secondary);
 
   font-synthesis: none;
   text-rendering: optimizeLegibility;

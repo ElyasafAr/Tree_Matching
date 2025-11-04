@@ -1,26 +1,29 @@
 .user-card {
-  background: white;
-  border-radius: 12px;
-  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+  background: var(--color-bg-primary);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+  border: 1px solid var(--color-border-light);
   overflow: hidden;
-  transition: transform 0.3s, box-shadow 0.3s;
+  transition: all var(--transition-base);
   display: flex;
   flex-direction: column;
 }
 
 .user-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 8px 15px rgba(0,0,0,0.2);
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-xl);
+  border-color: var(--color-secondary-light);
 }
 
 .user-card-image {
   width: 100%;
-  height: 200px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  height: 220px;
+  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-light) 100%);
   display: flex;
   align-items: center;
   justify-content: center;
   overflow: hidden;
+  position: relative;
 }
 
 .user-card-image img {
@@ -35,105 +38,124 @@
 }
 
 .user-card-content {
-  padding: 1.5rem;
+  padding: var(--spacing-xl);
 }
 
 .user-card-name {
-  font-size: 1.5rem;
-  margin: 0 0 0.5rem 0;
-  color: #333;
+  font-size: var(--font-size-2xl);
+  margin: 0 0 var(--spacing-sm) 0;
+  color: var(--color-text-primary);
+  font-weight: var(--font-weight-semibold);
+  line-height: var(--line-height-tight);
 }
 
 .user-card-info {
   display: flex;
-  gap: 1rem;
-  margin-bottom: 1rem;
-  color: #666;
-  font-size: 0.9rem;
+  gap: var(--spacing-md);
+  margin-bottom: var(--spacing-md);
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
 }
 
 .user-card-bio {
-  color: #555;
-  line-height: 1.6;
-  margin: 1rem 0;
-  font-size: 0.95rem;
+  color: var(--color-text-secondary);
+  line-height: var(--line-height-relaxed);
+  margin: var(--spacing-md) 0;
+  font-size: var(--font-size-base);
 }
 
 .user-card-referrer {
-  background: #f0f0f0;
-  padding: 0.75rem;
-  border-radius: 8px;
-  margin: 1rem 0;
-  font-size: 0.9rem;
+  background: var(--color-bg-tertiary);
+  padding: var(--spacing-md);
+  border-radius: var(--radius-md);
+  margin: var(--spacing-md) 0;
+  font-size: var(--font-size-sm);
+  border: 1px solid var(--color-border-light);
 }
 
 .referrer-link {
   background: none;
   border: none;
-  color: #667eea;
-  font-weight: bold;
+  color: var(--color-secondary);
+  font-weight: var(--font-weight-semibold);
   cursor: pointer;
-  text-decoration: underline;
-  font-size: 0.9rem;
+  text-decoration: none;
+  font-size: var(--font-size-sm);
+  transition: color var(--transition-base);
+  border-bottom: 2px solid var(--color-secondary-light);
 }
 
 .referrer-link:hover {
-  color: #764ba2;
+  color: var(--color-secondary-dark);
+  border-bottom-color: var(--color-secondary-dark);
 }
 
 .user-card-actions {
   display: flex;
-  gap: 0.5rem;
-  margin-top: 1rem;
+  gap: var(--spacing-sm);
+  margin-top: var(--spacing-lg);
   flex-wrap: wrap;
 }
 
 .btn {
-  padding: 0.75rem 1rem;
+  padding: 0.875rem 1.25rem;
   border: none;
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   cursor: pointer;
-  font-size: 0.9rem;
-  transition: all 0.3s;
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-medium);
+  transition: all var(--transition-base);
   flex: 1;
-  min-width: 100px;
+  min-width: 120px;
+  font-family: var(--font-primary);
+  box-shadow: var(--shadow-xs);
 }
 
 .btn-primary {
-  background: #667eea;
+  background: var(--color-primary);
   color: white;
 }
 
 .btn-primary:hover {
-  background: #5568d3;
+  background: var(--color-primary-dark);
+  box-shadow: var(--shadow-md);
+  transform: translateY(-1px);
 }
 
 .btn-secondary {
-  background: #f0f0f0;
-  color: #333;
+  background: transparent;
+  color: var(--color-primary);
+  border: 2px solid var(--color-border-medium);
 }
 
 .btn-secondary:hover {
-  background: #e0e0e0;
+  background: var(--color-bg-tertiary);
+  border-color: var(--color-primary);
 }
 
 .btn-like {
-  background: #ff6b6b;
+  background: var(--color-secondary);
   color: white;
 }
 
 .btn-like:hover {
-  background: #ff5252;
+  background: var(--color-secondary-dark);
+  box-shadow: var(--shadow-md);
+  transform: translateY(-1px);
 }
 
 .btn-liked {
-  background: #51cf66;
+  background: var(--color-success);
   color: white;
   cursor: not-allowed;
+  box-shadow: none;
 }
 
 .btn:disabled {
-  opacity: 0.6;
+  opacity: 0.5;
   cursor: not-allowed;
+  box-shadow: none;
+  transform: none;
 }
 
