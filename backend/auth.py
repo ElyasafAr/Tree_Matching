@@ -101,10 +101,16 @@ def login():
         user = User.query.filter_by(email_encrypted=email_encrypted).first()
         
         if not user:
+            print(f"[LOGIN DEBUG] User not found for email: {data['email']}")
             return jsonify({'error': 'Invalid email or password'}), 401
         
+        print(f"[LOGIN DEBUG] User found: ID={user.id}")
+        
         # Verify password
-        if not bcrypt.checkpw(data['password'].encode('utf-8'), user.password_hash.encode('utf-8')):
+        password_match = bcrypt.checkpw(data['password'].encode('utf-8'), user.password_hash.encode('utf-8'))
+        print(f"[LOGIN DEBUG] Password match: {password_match}")
+        
+        if not password_match:
             return jsonify({'error': 'Invalid email or password'}), 401
         
         # Create access token
