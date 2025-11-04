@@ -38,11 +38,17 @@ const Referrals = () => {
   const handleContactReferrer = async () => {
     if (myReferrer?.id) {
       try {
+        console.log('[REFERRER CHAT] Starting chat with referrer ID:', myReferrer.id);
         const response = await chatAPI.startChat(myReferrer.id);
+        console.log('[REFERRER CHAT] Response:', response.data);
         navigate(`/chat/${response.data.chat.id}`);
       } catch (error) {
-        alert("שגיאה בפתיחת צ'אט");
+        console.error('[REFERRER CHAT] Error:', error.response?.data || error.message);
+        alert("שגיאה בפתיחת צ'אט: " + (error.response?.data?.error || error.message));
       }
+    } else {
+      console.log('[REFERRER CHAT] No referrer found:', myReferrer);
+      alert("לא נמצא ממליץ");
     }
   };
 

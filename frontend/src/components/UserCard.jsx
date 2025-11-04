@@ -41,11 +41,17 @@ const UserCard = ({ user, showActions = true, onLike }) => {
   const handleContactReferrer = async () => {
     if (user.referred_by?.id) {
       try {
+        console.log('[CARD REFERRER CHAT] Starting chat with:', user.referred_by.id);
         const response = await chatAPI.startChat(user.referred_by.id);
+        console.log('[CARD REFERRER CHAT] Response:', response.data);
         navigate(`/chat/${response.data.chat.id}`);
       } catch (error) {
-        alert("שגיאה בפתיחת צ'אט עם הממליץ");
+        console.error('[CARD REFERRER CHAT] Error:', error.response?.data || error.message);
+        alert("שגיאה בפתיחת צ'אט עם הממליץ: " + (error.response?.data?.error || error.message));
       }
+    } else {
+      console.log('[CARD REFERRER CHAT] No referrer on user:', user);
+      alert("משתמש זה לא הומלץ על ידי אף אחד");
     }
   };
 
