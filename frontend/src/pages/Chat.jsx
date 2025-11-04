@@ -66,7 +66,7 @@ const Chat = () => {
       loadChatMessages(selectedChat.id, false);
       loadConversations(); // Refresh to update last message
     } catch (error) {
-      alert('שגיאה בשליחת הודעה');
+      alert("שגיאה בשליחת הודעה");
     }
   };
 

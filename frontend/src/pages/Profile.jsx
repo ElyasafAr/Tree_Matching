@@ -48,9 +48,9 @@ const Profile = () => {
       updateUser(response.data.user);
       setUser(response.data.user);
       setEditing(false);
-      alert('הפרופיל עודכן בהצלחה');
+      alert("הפרופיל עודכן בהצלחה");
     } catch (error) {
-      alert('שגיאה בעדכון הפרופיל');
+      alert("שגיאה בעדכון הפרופיל");
     }
   };
 
@@ -211,7 +211,7 @@ const Profile = () => {
               <button 
                 onClick={() => {
                   navigator.clipboard.writeText(user.referral_code);
-                  alert('קוד הועתק!');
+                  alert("קוד הועתק!");
                 }}
                 className="btn btn-small"
               >

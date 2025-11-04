@@ -16,11 +16,11 @@ const UserCard = ({ user, showActions = true, onLike }) => {
       const response = await usersAPI.likeUser(user.id);
       setLiked(true);
       if (response.data.is_mutual) {
-        alert('זה התאמה! 💚');
+        alert("זה התאמה! 💚");
       }
       if (onLike) onLike();
     } catch (error) {
-      alert(error.response?.data?.error || 'שגיאה בלייק');
+      alert(error.response?.data?.error || "שגיאה בלייק");
     }
     setLoading(false);
   };
@@ -30,7 +30,7 @@ const UserCard = ({ user, showActions = true, onLike }) => {
       const response = await chatAPI.startChat(user.id);
       navigate(`/chat/${response.data.chat.id}`);
     } catch (error) {
-      alert('שגיאה בפתיחת צ'אט');
+      alert("שגיאה בפתיחת צ'אט");
     }
   };
 
@@ -44,7 +44,7 @@ const UserCard = ({ user, showActions = true, onLike }) => {
         const response = await chatAPI.startChat(user.referred_by.id);
         navigate(`/chat/${response.data.chat.id}`);
       } catch (error) {
-        alert('שגיאה בפתיחת צ'אט עם הממליץ');
+        alert("שגיאה בפתיחת צ'אט עם הממליץ");
       }
     }
   };

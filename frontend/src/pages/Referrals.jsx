@@ -41,7 +41,7 @@ const Referrals = () => {
         const response = await chatAPI.startChat(myReferrer.id);
         navigate(`/chat/${response.data.chat.id}`);
       } catch (error) {
-        alert('שגיאה בפתיחת צ'אט');
+        alert("שגיאה בפתיחת צ'אט");
       }
     }
   };
