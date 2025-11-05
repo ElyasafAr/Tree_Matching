@@ -3,8 +3,32 @@ from flask_jwt_extended import jwt_required
 from models import db, User, Referral
 from encryption import encryption_service
 from utils import get_current_user_id
+import cloudinary
+import os
 
 referrals_bp = Blueprint('referrals', __name__, url_prefix='/referrals')
+
+# Configure Cloudinary
+cloudinary.config(
+    cloud_name=os.getenv('CLOUDINARY_CLOUD_NAME'),
+    api_key=os.getenv('CLOUDINARY_API_KEY'),
+    api_secret=os.getenv('CLOUDINARY_API_SECRET'),
+    secure=True
+)
+
+def get_cloudinary_url(public_id):
+    """Convert Cloudinary public_id to full URL"""
+    if not public_id:
+        return None
+    if public_id.startswith('http'):
+        return public_id
+    return cloudinary.CloudinaryImage(public_id).build_url(
+        secure=True,
+        transformation=[
+            {'quality': 'auto:good'},
+            {'fetch_format': 'auto'}
+        ]
+    )
 
 @referrals_bp.route('/my-referrals', methods=['GET'])
 @jwt_required()
@@ -23,7 +47,7 @@ def get_my_referrals():
                 user_dict = {
                     'id': user.id,
                     'name': encryption_service.decrypt(user.full_name_encrypted),
-                    'profile_image': user.profile_image,
+                    'profile_image': get_cloudinary_url(user.profile_image),
                     'age': user.age,
                     'gender': user.gender,
                     'location': user.location,
@@ -65,7 +89,7 @@ def get_referral_tree():
             return {
                 'id': user.id,
                 'name': encryption_service.decrypt(user.full_name_encrypted),
-                'profile_image': user.profile_image,
+                'profile_image': get_cloudinary_url(user.profile_image),
                 'referral_code': user.referral_code,
                 'children': children,
                 'children_count': len(referrals)
@@ -99,7 +123,7 @@ def get_my_referrer():
         referrer_data = {
             'id': referrer.id,
             'name': encryption_service.decrypt(referrer.full_name_encrypted),
-            'profile_image': referrer.profile_image,
+            'profile_image': get_cloudinary_url(referrer.profile_image),
             'age': referrer.age,
             'gender': referrer.gender,
             'location': referrer.location,
@@ -135,7 +159,7 @@ def get_referral_chain(user_id):
             chain.append({
                 'id': user.id,
                 'name': encryption_service.decrypt(user.full_name_encrypted),
-                'profile_image': user.profile_image
+                'profile_image': get_cloudinary_url(user.profile_image)
             })
             
             # Find who referred this user

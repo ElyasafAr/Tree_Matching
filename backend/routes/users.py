@@ -4,8 +4,37 @@ from models import db, User, Match, Referral
 from encryption import encryption_service
 from utils import get_current_user_id
 from sqlalchemy import or_, and_
+import cloudinary
+import cloudinary.utils
+import os
 
 users_bp = Blueprint('users', __name__, url_prefix='/users')
+
+# Configure Cloudinary
+cloudinary.config(
+    cloud_name=os.getenv('CLOUDINARY_CLOUD_NAME'),
+    api_key=os.getenv('CLOUDINARY_API_KEY'),
+    api_secret=os.getenv('CLOUDINARY_API_SECRET'),
+    secure=True
+)
+
+def get_cloudinary_url(public_id):
+    """Convert Cloudinary public_id to full URL"""
+    if not public_id:
+        return None
+    
+    # If it's already a full URL, return it
+    if public_id.startswith('http'):
+        return public_id
+    
+    # Generate Cloudinary URL with optimizations
+    return cloudinary.CloudinaryImage(public_id).build_url(
+        secure=True,
+        transformation=[
+            {'quality': 'auto:good'},
+            {'fetch_format': 'auto'}
+        ]
+    )
 
 @users_bp.route('/profile/<int:user_id>', methods=['GET'])
 @jwt_required()
@@ -22,6 +51,9 @@ def get_user_profile(user_id):
         user_data = user.to_dict()
         user_data['full_name'] = encryption_service.decrypt(user.full_name_encrypted)
         
+        # Convert Cloudinary public_id to full URL
+        user_data['profile_image'] = get_cloudinary_url(user.profile_image)
+        
         # Get referrer info
         referral = Referral.query.filter_by(referred_id=user.id).first()
         if referral:
@@ -30,7 +62,7 @@ def get_user_profile(user_id):
                 user_data['referred_by'] = {
                     'id': referrer.id,
                     'name': encryption_service.decrypt(referrer.full_name_encrypted),
-                    'profile_image': referrer.profile_image
+                    'profile_image': get_cloudinary_url(referrer.profile_image)
                 }
         
         # Check if current user has liked this user
@@ -97,6 +129,9 @@ def search_users():
         for user in users:
             user_dict = user.to_dict()
             user_dict['full_name'] = encryption_service.decrypt(user.full_name_encrypted)
+            
+            # Convert Cloudinary public_id to full URL
+            user_dict['profile_image'] = get_cloudinary_url(user.profile_image)
             
             # Get referrer info
             referral = Referral.query.filter_by(referred_id=user.id).first()
@@ -199,6 +234,10 @@ def get_matches():
                 user_dict = user.to_dict()
                 user_dict['full_name'] = encryption_service.decrypt(user.full_name_encrypted)
                 user_dict['matched_at'] = match.created_at.isoformat()
+                
+                # Convert Cloudinary public_id to full URL
+                user_dict['profile_image'] = get_cloudinary_url(user.profile_image)
+                
                 matches_data.append(user_dict)
         
         return jsonify({'matches': matches_data}), 200

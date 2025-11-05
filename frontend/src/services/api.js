@@ -71,9 +71,9 @@ export const uploadAPI = {
   },
   deleteProfileImage: () => api.delete('/upload/profile-image'),
   getImageUrl: (imagePath) => {
-    if (!imagePath) return null;
-    if (imagePath.startsWith('http')) return imagePath;
-    return `${API_BASE_URL}${imagePath}`;
+    // Cloudinary already returns full URLs from the backend
+    // Just return the URL as-is (or null if not provided)
+    return imagePath || null;
   },
 };
 

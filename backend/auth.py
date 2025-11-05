@@ -4,8 +4,32 @@ from flask_jwt_extended import create_access_token, jwt_required
 from models import db, User, Referral
 from encryption import encryption_service
 from utils import get_current_user_id
+import cloudinary
+import os
 
 auth_bp = Blueprint('auth', __name__, url_prefix='/auth')
+
+# Configure Cloudinary
+cloudinary.config(
+    cloud_name=os.getenv('CLOUDINARY_CLOUD_NAME'),
+    api_key=os.getenv('CLOUDINARY_API_KEY'),
+    api_secret=os.getenv('CLOUDINARY_API_SECRET'),
+    secure=True
+)
+
+def get_cloudinary_url(public_id):
+    """Convert Cloudinary public_id to full URL"""
+    if not public_id:
+        return None
+    if public_id.startswith('http'):
+        return public_id
+    return cloudinary.CloudinaryImage(public_id).build_url(
+        secure=True,
+        transformation=[
+            {'quality': 'auto:good'},
+            {'fetch_format': 'auto'}
+        ]
+    )
 
 @auth_bp.route('/register', methods=['POST'])
 def register():
@@ -136,6 +160,9 @@ def login():
         user_data['email'] = encryption_service.decrypt(user.email_encrypted)
         user_data['full_name'] = encryption_service.decrypt(user.full_name_encrypted)
         
+        # Convert Cloudinary public_id to full URL
+        user_data['profile_image'] = get_cloudinary_url(user.profile_image)
+        
         # Get referrer info
         referral = Referral.query.filter_by(referred_id=user.id).first()
         if referral:
@@ -173,6 +200,9 @@ def get_current_user():
         user_data['full_name'] = encryption_service.decrypt(user.full_name_encrypted)
         user_data['phone'] = encryption_service.decrypt(user.phone_encrypted) if user.phone_encrypted else None
         user_data['address'] = encryption_service.decrypt(user.address_encrypted) if user.address_encrypted else None
+        
+        # Convert Cloudinary public_id to full URL
+        user_data['profile_image'] = get_cloudinary_url(user.profile_image)
         
         # Get referrer info
         referral = Referral.query.filter_by(referred_id=user.id).first()

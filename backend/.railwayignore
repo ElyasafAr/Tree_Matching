@@ -11,4 +11,8 @@ venv/
 *.db
 *.sqlite
 
+# Uploaded files (using Cloudinary instead)
+uploads/
+uploads/**
+
 

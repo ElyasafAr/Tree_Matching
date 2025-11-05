@@ -4,8 +4,32 @@ from models import db, User, Chat, Message
 from encryption import encryption_service
 from utils import get_current_user_id
 from datetime import datetime
+import cloudinary
+import os
 
 chat_bp = Blueprint('chat', __name__, url_prefix='/chat')
+
+# Configure Cloudinary
+cloudinary.config(
+    cloud_name=os.getenv('CLOUDINARY_CLOUD_NAME'),
+    api_key=os.getenv('CLOUDINARY_API_KEY'),
+    api_secret=os.getenv('CLOUDINARY_API_SECRET'),
+    secure=True
+)
+
+def get_cloudinary_url(public_id):
+    """Convert Cloudinary public_id to full URL"""
+    if not public_id:
+        return None
+    if public_id.startswith('http'):
+        return public_id
+    return cloudinary.CloudinaryImage(public_id).build_url(
+        secure=True,
+        transformation=[
+            {'quality': 'auto:good'},
+            {'fetch_format': 'auto'}
+        ]
+    )
 
 @chat_bp.route('/conversations', methods=['GET'])
 @jwt_required()
@@ -30,7 +54,7 @@ def get_conversations():
                 chat_dict['other_user'] = {
                     'id': other_user.id,
                     'name': encryption_service.decrypt(other_user.full_name_encrypted),
-                    'profile_image': other_user.profile_image
+                    'profile_image': get_cloudinary_url(other_user.profile_image)
                 }
             
             conversations.append(chat_dict)
@@ -184,7 +208,7 @@ def start_chat(user_id):
         chat_dict['other_user'] = {
             'id': other_user.id,
             'name': encryption_service.decrypt(other_user.full_name_encrypted),
-            'profile_image': other_user.profile_image
+            'profile_image': get_cloudinary_url(other_user.profile_image)
         }
         
         return jsonify({'chat': chat_dict}), 200
