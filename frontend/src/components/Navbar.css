@@ -1,16 +1,19 @@
 .navbar {
-  background: var(--color-bg-primary);
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
   padding: 1.25rem 0;
-  box-shadow: var(--shadow-sm);
+  box-shadow: 0 4px 24px rgba(255, 107, 157, 0.1);
   position: sticky;
   top: 0;
   z-index: var(--z-sticky);
-  border-bottom: 1px solid var(--color-border-light);
-  transition: box-shadow var(--transition-base);
+  border-bottom: 1px solid rgba(255, 107, 157, 0.1);
+  transition: all var(--transition-base);
 }
 
 .navbar:hover {
-  box-shadow: var(--shadow-md);
+  box-shadow: 0 6px 32px rgba(255, 107, 157, 0.15);
+  background: rgba(255, 255, 255, 0.95);
 }
 
 .navbar-container {
@@ -23,17 +26,22 @@
 }
 
 .navbar-logo {
-  color: var(--color-primary);
+  background: var(--gradient-primary);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
   font-size: var(--font-size-2xl);
-  font-weight: var(--font-weight-bold);
+  font-weight: var(--font-weight-extrabold);
   text-decoration: none;
-  transition: color var(--transition-base);
+  transition: all var(--transition-base);
   font-family: var(--font-primary);
-  letter-spacing: -0.5px;
+  letter-spacing: -1px;
+  position: relative;
 }
 
 .navbar-logo:hover {
-  color: var(--color-secondary);
+  transform: rotate(-2deg) scale(1.05);
+  filter: brightness(1.2);
 }
 
 .navbar-menu {
@@ -46,26 +54,48 @@
   color: var(--color-text-secondary);
   text-decoration: none;
   padding: 0.625rem 1.25rem;
-  border-radius: var(--radius-md);
-  transition: all var(--transition-base);
+  border-radius: var(--radius-full);
+  transition: all 0.3s ease;
   background: none;
   border: none;
   cursor: pointer;
   font-size: var(--font-size-base);
   font-family: var(--font-primary);
-  font-weight: var(--font-weight-normal);
+  font-weight: var(--font-weight-medium);
   position: relative;
+}
+
+.navbar-item::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  width: 0;
+  height: 3px;
+  background: var(--gradient-primary);
+  transform: translateX(-50%);
+  transition: width 0.3s ease;
+  border-radius: 2px;
 }
 
 .navbar-item:hover {
   color: var(--color-primary);
-  background: var(--color-bg-tertiary);
+  background: rgba(255, 107, 157, 0.08);
+  transform: translateY(-2px);
+}
+
+.navbar-item:hover::after {
+  width: 60%;
 }
 
 .navbar-item:active,
 .navbar-item.active {
-  color: var(--color-secondary);
-  background: rgba(201, 161, 101, 0.1);
+  background: var(--gradient-primary);
+  color: white;
+}
+
+.navbar-item.active::after {
+  width: 0;
 }
 
 .navbar-logout {

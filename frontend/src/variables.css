@@ -1,37 +1,40 @@
 /* ====================================
-   סכמת צבעים מקצועית לאתר שידוכים
+   סכמת צבעים מודרנית לאתר שידוכים
+   Modern, Young & Dynamic Design
    ==================================== */
 
 :root {
-  /* Primary Colors - Navy & Warm */
-  --color-primary: #2C3E50;        /* כחול-אפור כהה - רצינות */
-  --color-primary-dark: #1a252f;   /* כהה יותר */
-  --color-primary-light: #34495e;  /* בהיר יותר */
+  /* Primary Colors - Pink to Orange Gradient */
+  --color-primary: #FF6B9D;        /* ורוד חי */
+  --color-primary-dark: #E55A8A;   /* ורוד כהה */
+  --color-primary-light: #FF8CB4;  /* ורוד בהיר */
+  --color-primary-orange: #FFA500; /* כתום */
   
-  /* Secondary Colors - Warm Gold */
-  --color-secondary: #C9A165;      /* זהב חם עדין - אלגנטיות */
-  --color-secondary-dark: #b08a4f;
-  --color-secondary-light: #ddb97a;
+  /* Secondary Colors - Purple to Blue */
+  --color-secondary: #A78BFA;      /* סגול רך */
+  --color-secondary-dark: #9068E0;
+  --color-secondary-light: #C4B5FD;
+  --color-secondary-blue: #60A5FA; /* כחול רך */
   
-  /* Accent Colors */
-  --color-accent: #7D8E9E;         /* אפור-כחול בהיר */
-  --color-accent-light: #9db0c3;
+  /* Accent Colors - Gold/Bronze */
+  --color-accent: #D4A574;         /* זהב/ברונזה */
+  --color-accent-light: #E6C79C;
   
   /* Neutral Colors */
   --color-bg-primary: #FFFFFF;
-  --color-bg-secondary: #F8F9FA;
-  --color-bg-tertiary: #F0F2F5;
+  --color-bg-secondary: #FAFAFA;   /* לבן חם */
+  --color-bg-tertiary: #F5F5F5;
   
   /* Text Colors */
-  --color-text-primary: #2C3E50;
-  --color-text-secondary: #5A6C7D;
-  --color-text-muted: #8898aa;
-  --color-text-light: #a0aec0;
+  --color-text-primary: #2D3748;   /* אפור כהה */
+  --color-text-secondary: #4A5568;
+  --color-text-muted: #718096;
+  --color-text-light: #A0AEC0;
   
   /* Border Colors */
-  --color-border-light: #E5E7EB;
-  --color-border-medium: #D1D5DB;
-  --color-border-dark: #9CA3AF;
+  --color-border-light: #F0F0F0;
+  --color-border-medium: #E0E0E0;
+  --color-border-dark: #BDBDBD;
   
   /* Semantic Colors */
   --color-success: #48BB78;
@@ -64,6 +67,7 @@
   --font-weight-medium: 500;
   --font-weight-semibold: 600;
   --font-weight-bold: 700;
+  --font-weight-extrabold: 800;
   
   /* Line Heights */
   --line-height-tight: 1.2;
@@ -86,21 +90,24 @@
      Border Radius
      ==================================== */
   
-  --radius-sm: 4px;
-  --radius-md: 8px;
-  --radius-lg: 12px;
-  --radius-xl: 16px;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 20px;
+  --radius-xl: 24px;
+  --radius-2xl: 32px;
   --radius-full: 9999px;
   
   /* ====================================
      Shadows
      ==================================== */
   
-  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.05);
-  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.08);
-  --shadow-md: 0 2px 8px rgba(0, 0, 0, 0.1);
-  --shadow-lg: 0 4px 12px rgba(0, 0, 0, 0.12);
-  --shadow-xl: 0 8px 24px rgba(0, 0, 0, 0.15);
+  --shadow-xs: 0 2px 4px rgba(0, 0, 0, 0.06);
+  --shadow-sm: 0 4px 8px rgba(0, 0, 0, 0.08);
+  --shadow-md: 0 8px 16px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 12px 24px rgba(0, 0, 0, 0.12);
+  --shadow-xl: 0 20px 60px rgba(0, 0, 0, 0.15);
+  --shadow-colored: 0 8px 24px rgba(255, 107, 157, 0.3);
+  --shadow-colored-hover: 0 12px 32px rgba(255, 107, 157, 0.4);
   
   /* ====================================
      Transitions
@@ -121,5 +128,66 @@
   --z-modal: 1050;
   --z-popover: 1060;
   --z-tooltip: 1070;
+  
+  /* ====================================
+     Gradients
+     ==================================== */
+  
+  --gradient-primary: linear-gradient(135deg, #FF6B9D 0%, #FFA500 100%);
+  --gradient-secondary: linear-gradient(135deg, #A78BFA 0%, #60A5FA 100%);
+  --gradient-accent: linear-gradient(135deg, #FF6B9D 0%, #A78BFA 50%, #60A5FA 100%);
+}
+
+/* ====================================
+   Animations & Keyframes
+   ==================================== */
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+}
+
+@keyframes glow {
+  0%, 100% {
+    box-shadow: 0 0 5px rgba(255, 107, 157, 0.5);
+  }
+  50% {
+    box-shadow: 0 0 20px rgba(255, 107, 157, 0.8), 0 0 30px rgba(167, 139, 250, 0.6);
+  }
+}
+
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes rotate {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
