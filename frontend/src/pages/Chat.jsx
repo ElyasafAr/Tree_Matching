@@ -1,11 +1,12 @@
 import { useState, useEffect, useRef } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { chatAPI } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import './Chat.css';
 
 const Chat = () => {
   const { chatId } = useParams();
+  const navigate = useNavigate();
   const { user: currentUser } = useAuth();
   const [conversations, setConversations] = useState([]);
   const [selectedChat, setSelectedChat] = useState(null);
@@ -80,6 +81,31 @@ const Chat = () => {
     }
   };
 
+  const handleDeleteChat = async () => {
+    if (!selectedChat) return;
+    
+    if (!confirm(`האם אתה בטוח שברצונך למחוק את השיחה עם ${selectedChat.other_user?.name}?`)) {
+      return;
+    }
+
+    try {
+      await chatAPI.deleteChat(selectedChat.id);
+      setSelectedChat(null);
+      setMessages([]);
+      loadConversations();
+      navigate('/chat');
+      alert('השיחה נמחקה בהצלחה');
+    } catch (error) {
+      alert('שגיאה במחיקת השיחה');
+    }
+  };
+
+  const handleViewProfile = () => {
+    if (selectedChat?.other_user?.id) {
+      navigate(`/user/${selectedChat.other_user.id}`);
+    }
+  };
+
   if (loading) return <div className="loading">טוען שיחות...</div>;
 
   return (
@@ -128,6 +154,22 @@ const Chat = () => {
           <>
             <div className="chat-header">
               <h3>{selectedChat.other_user?.name}</h3>
+              <div className="chat-header-actions">
+                <button 
+                  className="chat-header-btn"
+                  onClick={handleViewProfile}
+                  title="צפה בפרופיל"
+                >
+                  👤 פרופיל
+                </button>
+                <button 
+                  className="chat-header-btn delete-btn"
+                  onClick={handleDeleteChat}
+                  title="מחק שיחה"
+                >
+                  🗑️ מחק
+                </button>
+              </div>
             </div>
 
             <div className="messages-container">

@@ -244,3 +244,34 @@ def get_unread_count():
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
+
+@chat_bp.route('/delete/<int:chat_id>', methods=['DELETE'])
+@jwt_required()
+def delete_chat(chat_id):
+    """Delete a chat conversation and all its messages"""
+    try:
+        current_user_id = get_current_user_id()
+        
+        # Get the chat
+        chat = Chat.query.get(chat_id)
+        
+        if not chat:
+            return jsonify({'error': 'Chat not found'}), 404
+        
+        # Check if user is part of this chat
+        if chat.user1_id != current_user_id and chat.user2_id != current_user_id:
+            return jsonify({'error': 'Unauthorized'}), 403
+        
+        # Delete all messages in this chat
+        Message.query.filter_by(chat_id=chat_id).delete()
+        
+        # Delete the chat
+        db.session.delete(chat)
+        db.session.commit()
+        
+        return jsonify({'message': 'Chat deleted successfully'}), 200
+        
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500
+

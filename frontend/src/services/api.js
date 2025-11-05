@@ -47,6 +47,7 @@ export const chatAPI = {
   sendMessage: (recipientId, content) => api.post('/chat/send', { recipient_id: recipientId, content }),
   startChat: (userId) => api.post(`/chat/start/${userId}`),
   getUnreadCount: () => api.get('/chat/unread-count'),
+  deleteChat: (chatId) => api.delete(`/chat/delete/${chatId}`),
 };
 
 // Referrals endpoints
