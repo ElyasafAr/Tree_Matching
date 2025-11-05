@@ -141,3 +141,4 @@ VITE_API_URL=https://your-backend-url.up.railway.app
 **מה הסטטוס עכשיו? איזה Service נכשל?** 🤔
 
 
+
