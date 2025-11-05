@@ -1,6 +1,6 @@
 .chat-container {
   display: grid;
-  grid-template-columns: 1fr 200px;
+  grid-template-columns: 180px 1fr;
   height: calc(100vh - 80px);
   max-width: 1400px;
   margin: 0 auto;
@@ -252,7 +252,7 @@
 
 @media (max-width: 768px) {
   .chat-container {
-    grid-template-columns: 1fr 160px;
+    grid-template-columns: 140px 1fr;
     height: calc(100vh - 70px);
     border-radius: 0;
     margin: 0;
@@ -260,7 +260,7 @@
   
   .chat-sidebar {
     /* Keep visible but make it narrower */
-    min-width: 160px;
+    min-width: 140px;
   }
 
   .chat-sidebar h2 {
@@ -326,12 +326,12 @@
 
 @media (max-width: 480px) {
   .chat-container {
-    grid-template-columns: 1fr 120px;
+    grid-template-columns: 100px 1fr;
     height: calc(100vh - 60px);
   }
 
   .chat-sidebar {
-    min-width: 120px;
+    min-width: 100px;
   }
 
   .chat-sidebar h2 {
