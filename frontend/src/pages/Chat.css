@@ -11,6 +11,7 @@
   border-radius: var(--radius-lg);
   overflow: hidden;
   animation: fadeInUp 0.5s ease;
+  direction: ltr; /* Force LTR for layout */
 }
 
 .chat-sidebar {
@@ -119,6 +120,8 @@
   overflow: hidden;
   flex: 1;
   min-width: 0;
+  direction: rtl; /* RTL for content inside */
+  text-align: right;
 }
 
 .chat-header {
@@ -191,13 +194,13 @@
 }
 
 .message.sent {
-  align-self: flex-end;
-  align-items: flex-end;
+  align-self: flex-start; /* RTL: sent messages on left */
+  align-items: flex-start;
 }
 
 .message.received {
-  align-self: flex-start;
-  align-items: flex-start;
+  align-self: flex-end; /* RTL: received messages on right */
+  align-items: flex-end;
 }
 
 .message-content {
