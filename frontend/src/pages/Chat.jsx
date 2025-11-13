@@ -16,6 +16,129 @@ const Chat = () => {
   const [newMessage, setNewMessage] = useState('');
   const [loading, setLoading] = useState(true);
   const messagesEndRef = useRef(null);
+  
+  // Get user's timezone from browser
+  const userTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+  
+  // Helper function to check if two dates are on the same day (in user's timezone)
+  const isSameDay = (date1, date2) => {
+    // Compare dates in user's timezone by converting to date strings
+    const d1Str = date1.toLocaleDateString('en-CA', { timeZone: userTimeZone }); // YYYY-MM-DD format
+    const d2Str = date2.toLocaleDateString('en-CA', { timeZone: userTimeZone });
+    return d1Str === d2Str;
+  };
+  
+  // Helper function to format date and time according to user's timezone
+  const formatMessageTime = (utcTimeString) => {
+    if (!utcTimeString) return '';
+    
+    const messageDate = new Date(utcTimeString);
+    const now = new Date();
+    
+    const timeStr = messageDate.toLocaleTimeString('he-IL', {
+      hour: '2-digit',
+      minute: '2-digit',
+      timeZone: userTimeZone
+    });
+    
+    // If message is from today, show only time
+    if (isSameDay(messageDate, now)) {
+      return timeStr;
+    }
+    
+    // Create yesterday date in user's timezone
+    const yesterday = new Date(now);
+    yesterday.setDate(yesterday.getDate() - 1);
+    
+    // If message is from yesterday
+    if (isSameDay(messageDate, yesterday)) {
+      return `אתמול, ${timeStr}`;
+    }
+    
+    // Calculate days difference in user's timezone
+    const messageDateStr = messageDate.toLocaleDateString('en-CA', { timeZone: userTimeZone });
+    const todayStr = now.toLocaleDateString('en-CA', { timeZone: userTimeZone });
+    const messageParts = messageDateStr.split('-').map(Number);
+    const todayParts = todayStr.split('-').map(Number);
+    const messageDayObj = new Date(messageParts[0], messageParts[1] - 1, messageParts[2]);
+    const todayObj = new Date(todayParts[0], todayParts[1] - 1, todayParts[2]);
+    const daysDiff = Math.floor((todayObj - messageDayObj) / (1000 * 60 * 60 * 24));
+    
+    // If message is from this week (last 7 days)
+    if (daysDiff <= 7) {
+      const dayName = messageDate.toLocaleDateString('he-IL', {
+        weekday: 'long',
+        timeZone: userTimeZone
+      });
+      return `${dayName}, ${timeStr}`;
+    }
+    
+    // For older messages, show full date and time
+    const dateStr = messageDate.toLocaleDateString('he-IL', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+      timeZone: userTimeZone
+    });
+    return `${dateStr}, ${timeStr}`;
+  };
+  
+  // Helper function to check if we should show a date separator
+  const shouldShowDateSeparator = (currentMsg, previousMsg) => {
+    if (!previousMsg) return true; // First message always shows date
+    
+    const currentDate = new Date(currentMsg.sent_at);
+    const previousDate = new Date(previousMsg.sent_at);
+    
+    return !isSameDay(currentDate, previousDate);
+  };
+  
+  // Helper function to format date separator
+  const formatDateSeparator = (utcTimeString) => {
+    if (!utcTimeString) return '';
+    
+    const messageDate = new Date(utcTimeString);
+    const now = new Date();
+    
+    // If message is from today
+    if (isSameDay(messageDate, now)) {
+      return 'היום';
+    }
+    
+    // Create yesterday date in user's timezone
+    const yesterday = new Date(now);
+    yesterday.setDate(yesterday.getDate() - 1);
+    
+    // If message is from yesterday
+    if (isSameDay(messageDate, yesterday)) {
+      return 'אתמול';
+    }
+    
+    // Calculate days difference in user's timezone
+    const messageDateStr = messageDate.toLocaleDateString('en-CA', { timeZone: userTimeZone });
+    const todayStr = now.toLocaleDateString('en-CA', { timeZone: userTimeZone });
+    const messageParts = messageDateStr.split('-').map(Number);
+    const todayParts = todayStr.split('-').map(Number);
+    const messageDayObj = new Date(messageParts[0], messageParts[1] - 1, messageParts[2]);
+    const todayObj = new Date(todayParts[0], todayParts[1] - 1, todayParts[2]);
+    const daysDiff = Math.floor((todayObj - messageDayObj) / (1000 * 60 * 60 * 24));
+    
+    // If message is from this week
+    if (daysDiff <= 7) {
+      return messageDate.toLocaleDateString('he-IL', {
+        weekday: 'long',
+        timeZone: userTimeZone
+      });
+    }
+    
+    // For older messages, show full date
+    return messageDate.toLocaleDateString('he-IL', {
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric',
+      timeZone: userTimeZone
+    });
+  };
 
   useEffect(() => {
     loadConversations();
@@ -175,20 +298,28 @@ const Chat = () => {
             </div>
 
             <div className="messages-container">
-              {messages.map(msg => (
-                <div
-                  key={msg.id}
-                  className={`message ${msg.sender_id === currentUser.id ? 'sent' : 'received'}`}
-                >
-                  <div className="message-content">{msg.content}</div>
-                  <div className="message-time">
-                    {new Date(msg.sent_at).toLocaleTimeString('he-IL', {
-                      hour: '2-digit',
-                      minute: '2-digit'
-                    })}
+              {messages.map((msg, index) => {
+                const previousMsg = index > 0 ? messages[index - 1] : null;
+                const showDateSeparator = shouldShowDateSeparator(msg, previousMsg);
+                
+                return (
+                  <div key={msg.id}>
+                    {showDateSeparator && (
+                      <div className="date-separator">
+                        <span>{formatDateSeparator(msg.sent_at)}</span>
+                      </div>
+                    )}
+                    <div
+                      className={`message ${msg.sender_id === currentUser.id ? 'sent' : 'received'}`}
+                    >
+                      <div className="message-content">{msg.content}</div>
+                      <div className="message-time">
+                        {formatMessageTime(msg.sent_at)}
+                      </div>
+                    </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
               <div ref={messagesEndRef} />
             </div>
 

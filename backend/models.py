@@ -135,13 +135,22 @@ class Chat(db.Model):
     
     def to_dict(self, current_user_id=None):
         last_message = self.messages.first()
+        
+        # Ensure UTC timezone is indicated in ISO format
+        def format_datetime(dt):
+            if dt is None:
+                return None
+            if dt.tzinfo is None:
+                return dt.isoformat() + 'Z'
+            return dt.isoformat()
+        
         return {
             'id': self.id,
             'user1_id': self.user1_id,
             'user2_id': self.user2_id,
             'other_user_id': self.user2_id if current_user_id == self.user1_id else self.user1_id,
-            'created_at': self.created_at.isoformat() if self.created_at else None,
-            'last_message_at': self.last_message_at.isoformat() if self.last_message_at else None,
+            'created_at': format_datetime(self.created_at),
+            'last_message_at': format_datetime(self.last_message_at),
             'last_message': last_message.to_dict() if last_message else None
         }
 
@@ -158,12 +167,21 @@ class Message(db.Model):
     is_read = db.Column(db.Boolean, default=False)
     
     def to_dict(self):
+        # Ensure UTC timezone is indicated in ISO format
+        sent_at_iso = None
+        if self.sent_at:
+            # If datetime is naive (no timezone), treat it as UTC and add 'Z'
+            if self.sent_at.tzinfo is None:
+                sent_at_iso = self.sent_at.isoformat() + 'Z'
+            else:
+                sent_at_iso = self.sent_at.isoformat()
+        
         return {
             'id': self.id,
             'chat_id': self.chat_id,
             'sender_id': self.sender_id,
             'content': self.content,
-            'sent_at': self.sent_at.isoformat() if self.sent_at else None,
+            'sent_at': sent_at_iso,
             'is_read': self.is_read
         }
 
