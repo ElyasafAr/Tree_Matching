@@ -227,12 +227,18 @@ def create_app():
                 
                 # Add social_link column if missing
                 if 'social_link' not in columns:
-                    db.session.execute(text("""
-                        ALTER TABLE users 
-                        ADD COLUMN social_link VARCHAR(500);
-                    """))
-                    db.session.commit()
-                    print("✅ Migration: Added 'social_link' column to users table")
+                    try:
+                        db.session.execute(text("""
+                            ALTER TABLE users 
+                            ADD COLUMN social_link VARCHAR(500);
+                        """))
+                        db.session.commit()
+                        print("✅ Migration: Added 'social_link' column to users table")
+                    except Exception as migration_error:
+                        print(f"❌ Migration ERROR adding 'social_link': {migration_error}")
+                        import traceback
+                        traceback.print_exc()
+                        db.session.rollback()
                 else:
                     print("ℹ️  Migration: 'social_link' column already exists")
             else:
@@ -242,6 +248,8 @@ def create_app():
         except Exception as e:
             # Don't fail startup if migration fails (might be permission issue)
             print(f"⚠️  Migration check failed (non-critical): {e}")
+            import traceback
+            traceback.print_exc()
             db.session.rollback()
     
     return app
