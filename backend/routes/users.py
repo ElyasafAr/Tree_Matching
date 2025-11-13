@@ -283,6 +283,39 @@ def get_matches():
         return jsonify({'error': str(e)}), 500
 
 
+@users_bp.route('/test-social-link/<int:user_id>', methods=['GET'])
+@jwt_required()
+def test_social_link(user_id):
+    """Test endpoint to check social_link retrieval"""
+    try:
+        user = User.query.get(user_id)
+        if not user:
+            return jsonify({'error': 'User not found'}), 404
+        
+        # Direct DB query
+        from sqlalchemy import text
+        result = db.session.execute(text("SELECT social_link FROM users WHERE id = :user_id"), {"user_id": user_id})
+        db_row = result.fetchone()
+        db_value = db_row[0] if db_row else None
+        
+        # Get from model
+        model_value = user.social_link
+        
+        # Get from to_dict
+        user_dict = user.to_dict()
+        dict_value = user_dict.get('social_link')
+        
+        return jsonify({
+            'user_id': user_id,
+            'direct_db_query': db_value,
+            'model_attribute': model_value,
+            'to_dict_value': dict_value,
+            'to_dict_keys': list(user_dict.keys()),
+            'to_dict_full': user_dict
+        }), 200
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
 @users_bp.route('/profile', methods=['PUT'])
 @jwt_required()
 def update_profile():
@@ -365,10 +398,19 @@ def update_profile():
         user_data = user.to_dict()
         print(f"[UPDATE PROFILE] user_data from to_dict() keys: {list(user_data.keys())}")
         print(f"[UPDATE PROFILE] user_data['social_link'] = '{user_data.get('social_link')}'")
+        print(f"[UPDATE PROFILE] user_data['social_link'] type: {type(user_data.get('social_link'))}")
+        print(f"[UPDATE PROFILE] user_data['social_link'] is None: {user_data.get('social_link') is None}")
+        print(f"[UPDATE PROFILE] 'social_link' in user_data: {'social_link' in user_data}")
+        
         user_data['email'] = encryption_service.decrypt(user.email_encrypted)
         user_data['full_name'] = encryption_service.decrypt(user.full_name_encrypted)
         user_data['phone'] = encryption_service.decrypt(user.phone_encrypted) if user.phone_encrypted else None
         user_data['address'] = encryption_service.decrypt(user.address_encrypted) if user.address_encrypted else None
+        
+        # Ensure social_link is explicitly included even if None
+        if 'social_link' not in user_data:
+            user_data['social_link'] = user.social_link
+            print(f"[UPDATE PROFILE] Added social_link explicitly: '{user_data.get('social_link')}'")
         
         print(f"[UPDATE PROFILE] Returning user_data with social_link: {user_data.get('social_link')}")  # Debug log
         print(f"[UPDATE PROFILE] Full user_data before jsonify: {user_data}")
@@ -380,6 +422,13 @@ def update_profile():
         }
         print(f"[UPDATE PROFILE] Response data before jsonify: {response_data}")
         print(f"[UPDATE PROFILE] 'social_link' in response_data['user']: {'social_link' in response_data['user']}")
+        
+        # Test jsonify
+        import json
+        json_str = json.dumps(response_data, default=str)
+        print(f"[UPDATE PROFILE] JSON string: {json_str[:500]}...")  # First 500 chars
+        json_parsed = json.loads(json_str)
+        print(f"[UPDATE PROFILE] Parsed JSON 'social_link' in user: {'social_link' in json_parsed.get('user', {})}")
         
         return jsonify(response_data), 200
         
