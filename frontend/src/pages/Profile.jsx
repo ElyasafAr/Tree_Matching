@@ -402,27 +402,29 @@ const Profile = () => {
       <div className="profile-view">
         <div className="profile-header">
           <h1>הפרופיל שלי</h1>
-          <button 
-            onClick={() => setEditing(true)} 
-            className="btn btn-primary profile-edit-btn"
-            style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '0.5rem',
-              padding: '0.875rem 1.75rem',
-              fontSize: 'var(--font-size-base)',
-              fontWeight: 'var(--font-weight-semibold)',
-              background: 'var(--gradient-primary)',
-              color: 'white',
-              border: 'none',
-              borderRadius: 'var(--radius-md)',
-              cursor: 'pointer',
-              transition: 'all 0.3s ease',
-              boxShadow: 'var(--shadow-colored)'
-            }}
-          >
-            ✏️ ערוך פרופיל
-          </button>
+          <div style={{ width: '100%', marginTop: 'var(--spacing-lg)' }}>
+            <button 
+              onClick={() => setEditing(true)} 
+              className="btn btn-primary profile-edit-btn"
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '0.5rem',
+                padding: '0.875rem 1.75rem',
+                fontSize: 'var(--font-size-base)',
+                fontWeight: 'var(--font-weight-semibold)',
+                background: 'var(--gradient-primary)',
+                color: 'white',
+                border: 'none',
+                borderRadius: 'var(--radius-md)',
+                cursor: 'pointer',
+                transition: 'all 0.3s ease',
+                boxShadow: 'var(--shadow-colored)'
+              }}
+            >
+              ✏️ ערוך פרופיל
+            </button>
+          </div>
         </div>
 
         <div className="profile-info">

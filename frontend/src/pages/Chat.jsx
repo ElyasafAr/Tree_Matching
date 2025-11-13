@@ -20,10 +20,23 @@ const Chat = () => {
   }, []);
 
   useEffect(() => {
+    // When chatId changes or conversations are loaded, load the specific chat
     if (chatId) {
-      loadChatMessages(chatId);
+      if (conversations.length > 0) {
+        // Conversations already loaded, load the chat
+        loadChatMessages(chatId);
+      } else {
+        // Wait for conversations to load first
+        const checkAndLoad = async () => {
+          if (conversations.length === 0) {
+            await loadConversations();
+          }
+          loadChatMessages(chatId);
+        };
+        checkAndLoad();
+      }
     }
-  }, [chatId]);
+  }, [chatId, conversations.length]);
 
   // Auto-refresh messages every 5 seconds
   useEffect(() => {
@@ -59,8 +72,22 @@ const Chat = () => {
       const response = await chatAPI.getMessages(id);
       setMessages(response.data.messages);
       if (setAsSelected) {
-        const chat = conversations.find(c => c.id === parseInt(id));
-        setSelectedChat(chat);
+        // Try to find chat in conversations list
+        let chat = conversations.find(c => c.id === parseInt(id));
+        
+        // If chat not found in list (new chat), reload conversations to get it
+        if (!chat) {
+          const convResponse = await chatAPI.getConversations();
+          const updatedConversations = convResponse.data.conversations;
+          setConversations(updatedConversations);
+          chat = updatedConversations.find(c => c.id === parseInt(id));
+        }
+        
+        if (chat) {
+          setSelectedChat(chat);
+        } else {
+          console.error('Chat not found even after reloading conversations');
+        }
       }
     } catch (error) {
       console.error('Error loading messages:', error);
