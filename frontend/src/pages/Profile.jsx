@@ -1,13 +1,14 @@
 import { useState, useEffect, useRef } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { usersAPI, uploadAPI } from '../services/api';
+import { usersAPI, uploadAPI, chatAPI } from '../services/api';
 import UserCard from '../components/UserCard';
 import ISRAEL_LOCATIONS from '../data/locations';
 import './Profile.css';
 
 const Profile = () => {
   const { userId } = useParams();
+  const navigate = useNavigate();
   const { user: currentUser, updateUser } = useAuth();
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -111,10 +112,23 @@ const Profile = () => {
 
   if (!isOwnProfile) {
     return (
-      <div className="profile-container">
+        <div className="profile-container">
         <div className="profile-view">
           <div className="profile-header">
             <h1>פרופיל משתמש</h1>
+            <button
+              onClick={async () => {
+                try {
+                  const response = await chatAPI.startChat(user.id);
+                  navigate(`/chat/${response.data.chat.id}`);
+                } catch (error) {
+                  alert("שגיאה בפתיחת צ'אט: " + (error.response?.data?.error || error.message));
+                }
+              }}
+              className="btn btn-primary"
+            >
+              💬 צור קשר
+            </button>
           </div>
 
           <div className="profile-info">
@@ -176,7 +190,26 @@ const Profile = () => {
               <div className="info-section">
                 <h2>👤 הומלץ על ידי</h2>
                 <div className="referrer-info">
-                  <p><strong>{user.referred_by.name}</strong></p>
+                  <p>
+                    <strong>
+                      <button
+                        onClick={() => navigate(`/profile/${user.referred_by.id}`)}
+                        style={{
+                          background: 'none',
+                          border: 'none',
+                          color: 'var(--color-primary)',
+                          cursor: 'pointer',
+                          textDecoration: 'underline',
+                          fontSize: 'inherit',
+                          fontFamily: 'inherit',
+                          fontWeight: 'bold',
+                          padding: 0
+                        }}
+                      >
+                        {user.referred_by.name}
+                      </button>
+                    </strong>
+                  </p>
                 </div>
               </div>
             )}
@@ -504,7 +537,26 @@ const Profile = () => {
             <div className="info-section">
               <h2>הומלצתי על ידי</h2>
               <div className="referrer-info">
-                <p><strong>{user.referred_by.name}</strong></p>
+                <p>
+                  <strong>
+                    <button
+                      onClick={() => navigate(`/profile/${user.referred_by.id}`)}
+                      style={{
+                        background: 'none',
+                        border: 'none',
+                        color: 'var(--color-primary)',
+                        cursor: 'pointer',
+                        textDecoration: 'underline',
+                        fontSize: 'inherit',
+                        fontFamily: 'inherit',
+                        fontWeight: 'bold',
+                        padding: 0
+                      }}
+                    >
+                      {user.referred_by.name}
+                    </button>
+                  </strong>
+                </p>
               </div>
             </div>
           )}
