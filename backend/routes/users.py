@@ -49,6 +49,8 @@ def get_user_profile(user_id):
         
         # Basic user data
         user_data = user.to_dict()
+        print(f"[GET PROFILE] user.social_link from DB: {user.social_link}")  # Debug log
+        print(f"[GET PROFILE] user_data.social_link from to_dict: {user_data.get('social_link')}")  # Debug log
         user_data['full_name'] = encryption_service.decrypt(user.full_name_encrypted)
         
         # Convert Cloudinary public_id to full URL
@@ -271,7 +273,9 @@ def update_profile():
         if 'employment_status' in data:
             user.employment_status = data['employment_status'].strip() if data['employment_status'] and data['employment_status'].strip() else None
         if 'social_link' in data:
-            user.social_link = data['social_link'].strip() if data['social_link'] and data['social_link'].strip() else None
+            social_link_value = data['social_link'].strip() if data['social_link'] and data['social_link'].strip() else None
+            user.social_link = social_link_value
+            print(f"[UPDATE PROFILE] Setting social_link to: {social_link_value}")  # Debug log
         if 'interests' in data:
             user.interests = data['interests'] if data['interests'] else None
         if 'bio' in data:
@@ -286,6 +290,7 @@ def update_profile():
             user.address_encrypted = encryption_service.encrypt(data['address']) if data['address'] else None
         
         db.session.commit()
+        print(f"[UPDATE PROFILE] After commit, user.social_link = {user.social_link}")  # Debug log
         
         # Return updated user data
         user_data = user.to_dict()
@@ -293,6 +298,8 @@ def update_profile():
         user_data['full_name'] = encryption_service.decrypt(user.full_name_encrypted)
         user_data['phone'] = encryption_service.decrypt(user.phone_encrypted) if user.phone_encrypted else None
         user_data['address'] = encryption_service.decrypt(user.address_encrypted) if user.address_encrypted else None
+        
+        print(f"[UPDATE PROFILE] Returning user_data with social_link: {user_data.get('social_link')}")  # Debug log
         
         return jsonify({
             'message': 'Profile updated successfully',

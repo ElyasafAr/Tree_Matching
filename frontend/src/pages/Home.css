@@ -97,6 +97,7 @@
   grid-template-columns: 4fr 1fr;
   gap: var(--spacing-xl);
   min-height: 600px;
+  direction: ltr; /* Force LTR for layout */
 }
 
 .users-sidebar {
@@ -110,6 +111,8 @@
   order: 2;
   display: flex;
   flex-direction: column;
+  direction: rtl; /* RTL for content inside */
+  text-align: right;
 }
 
 .users-sidebar h3 {
@@ -221,6 +224,8 @@
   border: 2px solid rgba(255, 107, 157, 0.1);
   min-height: 600px;
   order: 1;
+  direction: rtl; /* RTL for content inside */
+  text-align: right;
 }
 
 .user-detail-content {

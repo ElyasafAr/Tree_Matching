@@ -208,6 +208,8 @@ def get_current_user():
         
         # Prepare user data with decrypted fields
         user_data = user.to_dict()
+        print(f"[GET CURRENT USER] user.social_link from DB: {user.social_link}")  # Debug log
+        print(f"[GET CURRENT USER] user_data.social_link from to_dict: {user_data.get('social_link')}")  # Debug log
         user_data['email'] = encryption_service.decrypt(user.email_encrypted)
         user_data['full_name'] = encryption_service.decrypt(user.full_name_encrypted)
         user_data['phone'] = encryption_service.decrypt(user.phone_encrypted) if user.phone_encrypted else None

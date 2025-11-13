@@ -21,6 +21,8 @@ const Profile = () => {
 
   useEffect(() => {
     if (isOwnProfile) {
+      console.log('[PROFILE] Setting currentUser:', currentUser); // Debug log
+      console.log('[PROFILE] currentUser.social_link:', currentUser?.social_link); // Debug log
       setUser(currentUser);
       setFormData(currentUser || {});
       setLoading(false);
@@ -34,6 +36,9 @@ const Profile = () => {
     try {
       const response = await usersAPI.getProfile(userId);
       console.log('[PROFILE] Loaded user data:', response.data.user); // Debug log
+      console.log('[PROFILE] user.social_link from API:', response.data.user?.social_link); // Debug log
+      console.log('[PROFILE] user.social_link type:', typeof response.data.user?.social_link); // Debug log
+      console.log('[PROFILE] user.social_link value:', response.data.user?.social_link); // Debug log
       setUser(response.data.user);
       setFormData(response.data.user); // Load formData when viewing other user's profile
     } catch (error) {
@@ -117,6 +122,15 @@ const Profile = () => {
 
   if (loading) return <div className="loading">טוען...</div>;
   if (!user) return <div className="loading">משתמש לא נמצא</div>;
+  
+  // Debug log when user is loaded
+  useEffect(() => {
+    if (user) {
+      console.log('[PROFILE] User state updated:', user);
+      console.log('[PROFILE] user.social_link in state:', user.social_link);
+      console.log('[PROFILE] formData.social_link:', formData.social_link);
+    }
+  }, [user, formData]);
 
   if (!isOwnProfile) {
     return (
