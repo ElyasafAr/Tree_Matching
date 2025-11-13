@@ -201,6 +201,7 @@ def create_app():
             if 'users' in inspector.get_table_names():
                 # Check if columns exist
                 columns = [col['name'] for col in inspector.get_columns('users')]
+                print(f"[MIGRATION] Existing columns in users table: {columns}")  # Debug log
                 
                 # Add height column if missing
                 if 'height' not in columns:
@@ -210,24 +211,30 @@ def create_app():
                     """))
                     db.session.commit()
                     print("✅ Migration: Added 'height' column to users table")
+                else:
+                    print("ℹ️  Migration: 'height' column already exists")
                 
-            # Add employment_status column if missing
-            if 'employment_status' not in columns:
-                db.session.execute(text("""
-                    ALTER TABLE users 
-                    ADD COLUMN employment_status VARCHAR(100);
-                """))
-                db.session.commit()
-                print("✅ Migration: Added 'employment_status' column to users table")
-            
-            # Add social_link column if missing
-            if 'social_link' not in columns:
-                db.session.execute(text("""
-                    ALTER TABLE users 
-                    ADD COLUMN social_link VARCHAR(500);
-                """))
-                db.session.commit()
-                print("✅ Migration: Added 'social_link' column to users table")
+                # Add employment_status column if missing
+                if 'employment_status' not in columns:
+                    db.session.execute(text("""
+                        ALTER TABLE users 
+                        ADD COLUMN employment_status VARCHAR(100);
+                    """))
+                    db.session.commit()
+                    print("✅ Migration: Added 'employment_status' column to users table")
+                else:
+                    print("ℹ️  Migration: 'employment_status' column already exists")
+                
+                # Add social_link column if missing
+                if 'social_link' not in columns:
+                    db.session.execute(text("""
+                        ALTER TABLE users 
+                        ADD COLUMN social_link VARCHAR(500);
+                    """))
+                    db.session.commit()
+                    print("✅ Migration: Added 'social_link' column to users table")
+                else:
+                    print("ℹ️  Migration: 'social_link' column already exists")
             else:
                 # Table doesn't exist yet, db.create_all() will create it with all columns
                 print("ℹ️  Users table doesn't exist yet, will be created with all columns")
