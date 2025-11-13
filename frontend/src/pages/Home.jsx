@@ -1,11 +1,12 @@
 import { useState, useEffect } from 'react';
-import { usersAPI } from '../services/api';
+import { usersAPI, uploadAPI } from '../services/api';
 import UserCard from '../components/UserCard';
 import ISRAEL_LOCATIONS from '../data/locations';
 import './Home.css';
 
 const Home = () => {
   const [users, setUsers] = useState([]);
+  const [selectedUser, setSelectedUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [filters, setFilters] = useState({
     gender: '',
@@ -18,6 +19,7 @@ const Home = () => {
 
   useEffect(() => {
     loadUsers();
+    setSelectedUser(null); // Reset selection when filters or page change
   }, [filters, page]);
 
   const loadUsers = async () => {
@@ -136,37 +138,74 @@ const Home = () => {
           <p>לא נמצאו משתמשים התואמים את הסינון</p>
         </div>
       ) : (
-        <>
-          <div className="users-grid">
-            {users.map(user => (
-              <UserCard key={user.id} user={user} onLike={loadUsers} />
-            ))}
+        <div className="search-layout">
+          <div className="users-sidebar">
+            <h3>תוצאות חיפוש ({users.length})</h3>
+            <div className="users-list-compact">
+              {users.map(user => (
+                <div
+                  key={user.id}
+                  className={`user-list-item ${selectedUser?.id === user.id ? 'active' : ''}`}
+                  onClick={() => setSelectedUser(user)}
+                >
+                  <div className="user-list-avatar">
+                    {user.profile_image ? (
+                      <img src={uploadAPI.getImageUrl(user.profile_image)} alt={user.full_name} />
+                    ) : (
+                      <div className="avatar-placeholder-small">
+                        {user.full_name?.[0] || '👤'}
+                      </div>
+                    )}
+                  </div>
+                  <div className="user-list-info">
+                    <div className="user-list-name">{user.full_name}</div>
+                    <div className="user-list-details">
+                      {user.age && <span>גיל: {user.age}</span>}
+                      {user.location && <span>📍 {user.location}</span>}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+            
+            {totalPages > 1 && (
+              <div className="pagination-compact">
+                <button 
+                  onClick={() => setPage(p => Math.max(1, p - 1))}
+                  disabled={page === 1}
+                  className="pagination-btn-small"
+                >
+                  ←
+                </button>
+                
+                <span className="pagination-info-small">
+                  {page}/{totalPages}
+                </span>
+                
+                <button 
+                  onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+                  disabled={page === totalPages}
+                  className="pagination-btn-small"
+                >
+                  →
+                </button>
+              </div>
+            )}
           </div>
 
-          {totalPages > 1 && (
-            <div className="pagination">
-              <button 
-                onClick={() => setPage(p => Math.max(1, p - 1))}
-                disabled={page === 1}
-                className="pagination-btn"
-              >
-                ← הקודם
-              </button>
-              
-              <span className="pagination-info">
-                עמוד {page} מתוך {totalPages}
-              </span>
-              
-              <button 
-                onClick={() => setPage(p => Math.min(totalPages, p + 1))}
-                disabled={page === totalPages}
-                className="pagination-btn"
-              >
-                הבא →
-              </button>
-            </div>
-          )}
-        </>
+          <div className="user-detail-panel">
+            {selectedUser ? (
+              <div className="user-detail-content">
+                <UserCard user={selectedUser} showActions={true} onLike={loadUsers} />
+              </div>
+            ) : (
+              <div className="no-user-selected">
+                <h3>👆 בחר משתמש מהרשימה</h3>
+                <p>לחץ על משתמש מהרשימה כדי לראות פרטים מלאים</p>
+              </div>
+            )}
+          </div>
+        </div>
       )}
     </div>
   );

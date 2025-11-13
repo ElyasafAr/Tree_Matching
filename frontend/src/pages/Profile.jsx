@@ -34,6 +34,7 @@ const Profile = () => {
     try {
       const response = await usersAPI.getProfile(userId);
       setUser(response.data.user);
+      setFormData(response.data.user); // Load formData when viewing other user's profile
     } catch (error) {
       console.error('Error loading profile:', error);
     }

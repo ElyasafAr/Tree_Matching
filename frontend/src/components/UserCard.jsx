@@ -80,6 +80,24 @@ const UserCard = ({ user, showActions = true, onLike }) => {
           <p className="user-card-bio">{user.bio}</p>
         )}
         
+        {user.social_link && (
+          <div className="user-card-social">
+            <a 
+              href={user.social_link} 
+              target="_blank" 
+              rel="noopener noreferrer"
+              style={{
+                color: 'var(--color-primary)',
+                textDecoration: 'underline',
+                fontSize: '0.9rem',
+                wordBreak: 'break-all'
+              }}
+            >
+              🔗 רשת חברתית
+            </a>
+          </div>
+        )}
+        
         {user.referred_by && (
           <div className="user-card-referrer">
             <span>הומלץ על ידי: </span>
