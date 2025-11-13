@@ -33,6 +33,7 @@ const Profile = () => {
     setLoading(true);
     try {
       const response = await usersAPI.getProfile(userId);
+      console.log('[PROFILE] Loaded user data:', response.data.user); // Debug log
       setUser(response.data.user);
       setFormData(response.data.user); // Load formData when viewing other user's profile
     } catch (error) {
@@ -43,13 +44,16 @@ const Profile = () => {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
+    console.log(`[PROFILE] Updating ${name}:`, value); // Debug log
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    console.log('[PROFILE] Submitting formData:', formData); // Debug log
     try {
       const response = await usersAPI.updateProfile(formData);
+      console.log('[PROFILE] Response:', response.data); // Debug log
       updateUser(response.data.user);
       setUser(response.data.user);
       setFormData(response.data.user); // Update formData with response to ensure social_link is included
@@ -57,6 +61,7 @@ const Profile = () => {
       alert("הפרופיל עודכן בהצלחה");
     } catch (error) {
       console.error('Error updating profile:', error);
+      console.error('Error response:', error.response?.data); // Debug log
       alert("שגיאה בעדכון הפרופיל: " + (error.response?.data?.error || error.message));
     }
   };
