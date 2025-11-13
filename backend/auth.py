@@ -71,6 +71,12 @@ def register():
         location = data.get('location')
         location = location.strip() if location and location.strip() else None
         
+        height = data.get('height')
+        height = int(height) if height and str(height).strip() else None
+        
+        employment_status = data.get('employment_status')
+        employment_status = employment_status.strip() if employment_status and employment_status.strip() else None
+        
         # Create new user
         new_user = User(
             email_hash=email_hash,
@@ -82,6 +88,8 @@ def register():
             age=age,
             gender=data.get('gender') if data.get('gender') else None,
             location=location,
+            height=height,
+            employment_status=employment_status,
             interests=data.get('interests') if data.get('interests') else None,
             bio=data.get('bio') if data.get('bio') else None,
             profile_image=data.get('profile_image') if data.get('profile_image') else None

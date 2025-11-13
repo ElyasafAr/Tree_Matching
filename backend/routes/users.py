@@ -261,17 +261,21 @@ def update_profile():
         
         # Update public fields
         if 'age' in data:
-            user.age = data['age']
+            user.age = int(data['age']) if data['age'] and str(data['age']).strip() else None
         if 'gender' in data:
-            user.gender = data['gender']
+            user.gender = data['gender'] if data['gender'] else None
         if 'location' in data:
-            user.location = data['location']
+            user.location = data['location'].strip() if data['location'] and data['location'].strip() else None
+        if 'height' in data:
+            user.height = int(data['height']) if data['height'] and str(data['height']).strip() else None
+        if 'employment_status' in data:
+            user.employment_status = data['employment_status'].strip() if data['employment_status'] and data['employment_status'].strip() else None
         if 'interests' in data:
-            user.interests = data['interests']
+            user.interests = data['interests'] if data['interests'] else None
         if 'bio' in data:
-            user.bio = data['bio']
+            user.bio = data['bio'] if data['bio'] else None
         if 'profile_image' in data:
-            user.profile_image = data['profile_image']
+            user.profile_image = data['profile_image'] if data['profile_image'] else None
         
         # Update encrypted fields
         if 'phone' in data:

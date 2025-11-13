@@ -188,9 +188,45 @@ def create_app():
         print(f"[JWT ERROR] Token expired - payload: {jwt_payload}")
         return jsonify({'error': 'Token has expired'}), 401
     
-    # Create database tables
+    # Create database tables and run migrations
     with app.app_context():
         db.create_all()
+        
+        # Auto-migration: Add new columns if they don't exist
+        try:
+            from sqlalchemy import text, inspect
+            
+            # Check if table exists first
+            inspector = inspect(db.engine)
+            if 'users' in inspector.get_table_names():
+                # Check if columns exist
+                columns = [col['name'] for col in inspector.get_columns('users')]
+                
+                # Add height column if missing
+                if 'height' not in columns:
+                    db.session.execute(text("""
+                        ALTER TABLE users 
+                        ADD COLUMN height INTEGER;
+                    """))
+                    db.session.commit()
+                    print("✅ Migration: Added 'height' column to users table")
+                
+                # Add employment_status column if missing
+                if 'employment_status' not in columns:
+                    db.session.execute(text("""
+                        ALTER TABLE users 
+                        ADD COLUMN employment_status VARCHAR(100);
+                    """))
+                    db.session.commit()
+                    print("✅ Migration: Added 'employment_status' column to users table")
+            else:
+                # Table doesn't exist yet, db.create_all() will create it with all columns
+                print("ℹ️  Users table doesn't exist yet, will be created with all columns")
+                
+        except Exception as e:
+            # Don't fail startup if migration fails (might be permission issue)
+            print(f"⚠️  Migration check failed (non-critical): {e}")
+            db.session.rollback()
     
     return app
 

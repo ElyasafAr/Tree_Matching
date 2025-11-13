@@ -3,6 +3,7 @@ import { useParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { usersAPI, uploadAPI } from '../services/api';
 import UserCard from '../components/UserCard';
+import ISRAEL_LOCATIONS from '../data/locations';
 import './Profile.css';
 
 const Profile = () => {
@@ -144,6 +145,16 @@ const Profile = () => {
                     <strong>מיקום:</strong> {user.location}
                   </div>
                 )}
+                {user.height && (
+                  <div className="info-item">
+                    <strong>גובה:</strong> {user.height} ס"מ
+                  </div>
+                )}
+                {user.employment_status && (
+                  <div className="info-item">
+                    <strong>מצב תעסוקתי:</strong> {user.employment_status}
+                  </div>
+                )}
               </div>
             </div>
 
@@ -256,13 +267,52 @@ const Profile = () => {
 
             <div className="form-group">
               <label>מיקום</label>
-              <input
-                type="text"
+              <select
                 name="location"
                 value={formData.location || ''}
                 onChange={handleChange}
                 className="form-input"
+              >
+                <option value="">בחר מיקום</option>
+                {ISRAEL_LOCATIONS.map((loc) => (
+                  <option key={loc.value} value={loc.value}>
+                    {loc.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="form-group">
+              <label>גובה (ס"מ)</label>
+              <input
+                type="number"
+                name="height"
+                value={formData.height || ''}
+                onChange={handleChange}
+                className="form-input"
+                placeholder="למשל: 175"
+                min="100"
+                max="250"
               />
+            </div>
+
+            <div className="form-group">
+              <label>מצב תעסוקתי</label>
+              <select
+                name="employment_status"
+                value={formData.employment_status || ''}
+                onChange={handleChange}
+                className="form-input"
+              >
+                <option value="">בחר מצב תעסוקתי</option>
+                <option value="עובד/ת">עובד/ת</option>
+                <option value="סטודנט/ית">סטודנט/ית</option>
+                <option value="עובד/ת וסטודנט/ית">עובד/ת וסטודנט/ית</option>
+                <option value="בחיפוש עבודה">בחיפוש עבודה</option>
+                <option value="עצמאי/ת">עצמאי/ת</option>
+                <option value="בפנסיה">בפנסיה</option>
+                <option value="אחר">אחר</option>
+              </select>
             </div>
 
             <div className="form-group">
@@ -346,6 +396,16 @@ const Profile = () => {
               <div className="info-item">
                 <strong>מיקום:</strong> {user.location || 'לא מוגדר'}
               </div>
+              {user.height && (
+                <div className="info-item">
+                  <strong>גובה:</strong> {user.height} ס"מ
+                </div>
+              )}
+              {user.employment_status && (
+                <div className="info-item">
+                  <strong>מצב תעסוקתי:</strong> {user.employment_status}
+                </div>
+              )}
               <div className="info-item">
                 <strong>כתובת:</strong> {user.address || 'לא מוגדר'}
               </div>
@@ -364,16 +424,80 @@ const Profile = () => {
             <div className="referral-code">
               <code>{user.referral_code}</code>
               <button 
-                onClick={() => {
-                  navigator.clipboard.writeText(user.referral_code);
-                  alert("קוד הועתק!");
+                onClick={async () => {
+                  try {
+                    if (navigator.clipboard && navigator.clipboard.writeText) {
+                      await navigator.clipboard.writeText(user.referral_code);
+                      alert("קוד הועתק ללוח!");
+                    } else {
+                      // Fallback for older browsers
+                      const textArea = document.createElement('textarea');
+                      textArea.value = user.referral_code;
+                      textArea.style.position = 'fixed';
+                      textArea.style.left = '-999999px';
+                      document.body.appendChild(textArea);
+                      textArea.select();
+                      try {
+                        document.execCommand('copy');
+                        alert("קוד הועתק ללוח!");
+                      } catch (err) {
+                        alert("לא ניתן להעתיק אוטומטית. הקוד הוא: " + user.referral_code);
+                      }
+                      document.body.removeChild(textArea);
+                    }
+                  } catch (err) {
+                    // Final fallback - show the code
+                    alert("לא ניתן להעתיק אוטומטית. הקוד הוא: " + user.referral_code);
+                  }
                 }}
                 className="btn btn-small"
               >
-                📋 העתק
+                📋 העתק קוד
               </button>
             </div>
-            <p className="referral-hint">שתף קוד זה עם חברים כדי שיוכלו להצטרף</p>
+            <div className="referral-link" style={{ marginTop: '1rem', padding: '1rem', background: 'rgba(255, 107, 157, 0.05)', borderRadius: '8px', border: '1px solid rgba(255, 107, 157, 0.2)' }}>
+              <p style={{ margin: '0 0 0.5rem 0', fontSize: '0.9rem', color: 'var(--color-text-secondary)' }}>
+                🔗 לינק לשיתוף:
+              </p>
+              <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', flexWrap: 'wrap' }}>
+                <code style={{ flex: 1, minWidth: '200px', padding: '0.5rem', background: 'white', borderRadius: '4px', fontSize: '0.85rem', wordBreak: 'break-all' }}>
+                  {window.location.origin}/register?ref={user.referral_code}
+                </code>
+                <button 
+                  onClick={async () => {
+                    const referralLink = `${window.location.origin}/register?ref=${user.referral_code}`;
+                    try {
+                      if (navigator.clipboard && navigator.clipboard.writeText) {
+                        await navigator.clipboard.writeText(referralLink);
+                        alert("לינק הועתק ללוח!");
+                      } else {
+                        // Fallback for older browsers
+                        const textArea = document.createElement('textarea');
+                        textArea.value = referralLink;
+                        textArea.style.position = 'fixed';
+                        textArea.style.left = '-999999px';
+                        document.body.appendChild(textArea);
+                        textArea.select();
+                        try {
+                          document.execCommand('copy');
+                          alert("לינק הועתק ללוח!");
+                        } catch (err) {
+                          alert("לא ניתן להעתיק אוטומטית. הלינק הוא: " + referralLink);
+                        }
+                        document.body.removeChild(textArea);
+                      }
+                    } catch (err) {
+                      alert("לא ניתן להעתיק אוטומטית. הלינק הוא: " + referralLink);
+                    }
+                  }}
+                  className="btn btn-small"
+                  style={{ whiteSpace: 'nowrap' }}
+                >
+                  📋 העתק לינק
+                </button>
+              </div>
+            </div>
+            <p className="referral-hint">שתף קוד זה או את הלינק עם חברים כדי שיוכלו להצטרף</p>
           </div>
 
           {user.referred_by && (

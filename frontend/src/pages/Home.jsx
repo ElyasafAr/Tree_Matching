@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { usersAPI } from '../services/api';
 import UserCard from '../components/UserCard';
+import ISRAEL_LOCATIONS from '../data/locations';
 import './Home.css';
 
 const Home = () => {
@@ -108,14 +109,19 @@ const Home = () => {
             max="120"
           />
 
-          <input
-            type="text"
+          <select
             name="location"
             value={filters.location}
             onChange={handleFilterChange}
-            placeholder="מיקום"
             className="filter-input"
-          />
+          >
+            <option value="">כל המיקומים</option>
+            {ISRAEL_LOCATIONS.map((loc) => (
+              <option key={loc.value} value={loc.value}>
+                {loc.label}
+              </option>
+            ))}
+          </select>
 
           <button onClick={handleClearFilters} className="filter-clear">
             נקה סינון

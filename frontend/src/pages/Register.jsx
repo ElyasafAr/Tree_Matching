@@ -1,10 +1,12 @@
-import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { authAPI } from '../services/api';
+import ISRAEL_LOCATIONS from '../data/locations';
 import './Auth.css';
 
 const Register = () => {
+  const [searchParams] = useSearchParams();
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -14,6 +16,8 @@ const Register = () => {
     age: '',
     gender: '',
     location: '',
+    height: '',
+    employment_status: '',
     bio: '',
     referral_code: ''
   });
@@ -24,18 +28,6 @@ const Register = () => {
   
   const { register } = useAuth();
   const navigate = useNavigate();
-
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
-    
-    // Validate referral code when it changes
-    if (name === 'referral_code' && value.length >= 6) {
-      validateReferralCode(value);
-    } else if (name === 'referral_code') {
-      setReferrerName('');
-    }
-  };
 
   const validateReferralCode = async (code) => {
     setValidatingCode(true);
@@ -52,6 +44,31 @@ const Register = () => {
       setReferrerName('');
     }
     setValidatingCode(false);
+  };
+
+  // Load referral code from URL if present
+  useEffect(() => {
+    const refCode = searchParams.get('ref');
+    if (refCode) {
+      setFormData(prev => ({ ...prev, referral_code: refCode }));
+      // Validate the code automatically
+      if (refCode.length >= 6) {
+        validateReferralCode(refCode);
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams]);
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
+    
+    // Validate referral code when it changes
+    if (name === 'referral_code' && value.length >= 6) {
+      validateReferralCode(value);
+    } else if (name === 'referral_code') {
+      setReferrerName('');
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -203,15 +220,57 @@ const Register = () => {
             
             <div className="form-group">
               <label htmlFor="location">מיקום</label>
-              <input
-                type="text"
+              <select
                 id="location"
                 name="location"
                 value={formData.location}
                 onChange={handleChange}
                 className="form-input"
-                placeholder="עיר/אזור"
+              >
+                <option value="">בחר מיקום</option>
+                {ISRAEL_LOCATIONS.map((loc) => (
+                  <option key={loc.value} value={loc.value}>
+                    {loc.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          <div className="form-row">
+            <div className="form-group">
+              <label htmlFor="height">גובה (ס"מ)</label>
+              <input
+                type="number"
+                id="height"
+                name="height"
+                value={formData.height}
+                onChange={handleChange}
+                className="form-input"
+                placeholder="למשל: 175"
+                min="100"
+                max="250"
               />
+            </div>
+            
+            <div className="form-group">
+              <label htmlFor="employment_status">מצב תעסוקתי</label>
+              <select
+                id="employment_status"
+                name="employment_status"
+                value={formData.employment_status}
+                onChange={handleChange}
+                className="form-input"
+              >
+                <option value="">בחר מצב תעסוקתי</option>
+                <option value="עובד/ת">עובד/ת</option>
+                <option value="סטודנט/ית">סטודנט/ית</option>
+                <option value="עובד/ת וסטודנט/ית">עובד/ת וסטודנט/ית</option>
+                <option value="בחיפוש עבודה">בחיפוש עבודה</option>
+                <option value="עצמאי/ת">עצמאי/ת</option>
+                <option value="בפנסיה">בפנסיה</option>
+                <option value="אחר">אחר</option>
+              </select>
             </div>
           </div>
 

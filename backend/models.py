@@ -26,6 +26,8 @@ class User(db.Model):
     age = db.Column(db.Integer, nullable=True)
     gender = db.Column(db.String(20), nullable=True)  # male, female, other
     location = db.Column(db.String(100), nullable=True)  # City/Region
+    height = db.Column(db.Integer, nullable=True)  # Height in cm
+    employment_status = db.Column(db.String(100), nullable=True)  # Employment status
     interests = db.Column(db.Text, nullable=True)  # JSON string of interests
     bio = db.Column(db.Text, nullable=True)  # Open text field
     profile_image = db.Column(db.String(500), nullable=True)  # URL or path
@@ -68,6 +70,8 @@ class User(db.Model):
             'age': self.age,
             'gender': self.gender,
             'location': self.location,
+            'height': self.height,
+            'employment_status': self.employment_status,
             'interests': self.interests,
             'bio': self.bio,
             'profile_image': self.profile_image,
