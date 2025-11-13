@@ -52,10 +52,12 @@ const Profile = () => {
       const response = await usersAPI.updateProfile(formData);
       updateUser(response.data.user);
       setUser(response.data.user);
+      setFormData(response.data.user); // Update formData with response to ensure social_link is included
       setEditing(false);
       alert("הפרופיל עודכן בהצלחה");
     } catch (error) {
-      alert("שגיאה בעדכון הפרופיל");
+      console.error('Error updating profile:', error);
+      alert("שגיאה בעדכון הפרופיל: " + (error.response?.data?.error || error.message));
     }
   };
 
@@ -139,63 +141,64 @@ const Profile = () => {
             </div>
 
             {/* Full profile information */}
-            <div className="info-section">
-              <h2>📋 פרטים</h2>
-              <div className="info-grid">
-                <div className="info-item">
-                  <strong>שם:</strong> {user.full_name}
+            <div className="info-section profile-details-group">
+              <h2>📋 כל הפרטים</h2>
+              <div className="info-item info-item-all-details">
+                <div className="info-details-grid">
+                  <div className="info-detail-row">
+                    <strong>שם:</strong> <span>{user.full_name}</span>
+                  </div>
+                  {user.age && (
+                    <div className="info-detail-row">
+                      <strong>גיל:</strong> <span>{user.age}</span>
+                    </div>
+                  )}
+                  {user.gender && (
+                    <div className="info-detail-row">
+                      <strong>מגדר:</strong> <span>{user.gender === 'male' ? 'זכר' : user.gender === 'female' ? 'נקבה' : 'אחר'}</span>
+                    </div>
+                  )}
+                  {user.location && (
+                    <div className="info-detail-row">
+                      <strong>מיקום:</strong> <span>{user.location}</span>
+                    </div>
+                  )}
+                  {user.height && (
+                    <div className="info-detail-row">
+                      <strong>גובה:</strong> <span>{user.height} ס"מ</span>
+                    </div>
+                  )}
+                  {user.employment_status && (
+                    <div className="info-detail-row">
+                      <strong>מצב תעסוקתי:</strong> <span>{user.employment_status}</span>
+                    </div>
+                  )}
+                  {user.social_link && (
+                    <div className="info-detail-row">
+                      <strong>רשת חברתית:</strong>{' '}
+                      <a 
+                        href={user.social_link} 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        style={{
+                          color: 'var(--color-primary)',
+                          textDecoration: 'underline',
+                          wordBreak: 'break-all'
+                        }}
+                      >
+                        {user.social_link}
+                      </a>
+                    </div>
+                  )}
                 </div>
-                {user.age && (
-                  <div className="info-item">
-                    <strong>גיל:</strong> {user.age}
-                  </div>
-                )}
-                {user.gender && (
-                  <div className="info-item">
-                    <strong>מגדר:</strong> {user.gender === 'male' ? 'זכר' : user.gender === 'female' ? 'נקבה' : 'אחר'}
-                  </div>
-                )}
-                {user.location && (
-                  <div className="info-item">
-                    <strong>מיקום:</strong> {user.location}
-                  </div>
-                )}
-                {user.height && (
-                  <div className="info-item">
-                    <strong>גובה:</strong> {user.height} ס"מ
-                  </div>
-                )}
-                {user.employment_status && (
-                  <div className="info-item">
-                    <strong>מצב תעסוקתי:</strong> {user.employment_status}
-                  </div>
-                )}
-                {user.social_link && (
-                  <div className="info-item">
-                    <strong>רשת חברתית:</strong>{' '}
-                    <a 
-                      href={user.social_link} 
-                      target="_blank" 
-                      rel="noopener noreferrer"
-                      style={{
-                        color: 'var(--color-primary)',
-                        textDecoration: 'underline',
-                        wordBreak: 'break-all'
-                      }}
-                    >
-                      {user.social_link}
-                    </a>
+                {user.bio && (
+                  <div className="info-bio-section">
+                    <strong>על עצמי:</strong>
+                    <p style={{ marginTop: '0.5rem', whiteSpace: 'pre-wrap' }}>{user.bio}</p>
                   </div>
                 )}
               </div>
             </div>
-
-            {user.bio && (
-              <div className="info-section">
-                <h2>💭 על עצמי</h2>
-                <p style={{ whiteSpace: 'pre-wrap' }}>{user.bio}</p>
-              </div>
-            )}
 
             {user.interests && (
               <div className="info-section">
@@ -463,57 +466,59 @@ const Profile = () => {
         <div className="profile-info">
           <div className="info-section profile-details-group">
             <h2>📋 כל הפרטים</h2>
-            <div className="info-grid">
-              <div className="info-item">
-                <strong>שם:</strong> {user.full_name}
-              </div>
-              <div className="info-item">
-                <strong>אימייל:</strong> {user.email}
-              </div>
-              <div className="info-item">
-                <strong>טלפון:</strong> {user.phone || 'לא מוגדר'}
-              </div>
-              <div className="info-item">
-                <strong>גיל:</strong> {user.age || 'לא מוגדר'}
-              </div>
-              <div className="info-item">
-                <strong>מגדר:</strong> {user.gender === 'male' ? 'זכר' : user.gender === 'female' ? 'נקבה' : user.gender || 'לא מוגדר'}
-              </div>
-              <div className="info-item">
-                <strong>מיקום:</strong> {user.location || 'לא מוגדר'}
-              </div>
-              {user.height && (
-                <div className="info-item">
-                  <strong>גובה:</strong> {user.height} ס"מ
+            <div className="info-item info-item-all-details">
+              <div className="info-details-grid">
+                <div className="info-detail-row">
+                  <strong>שם:</strong> <span>{user.full_name}</span>
                 </div>
-              )}
-              {user.employment_status && (
-                <div className="info-item">
-                  <strong>מצב תעסוקתי:</strong> {user.employment_status}
+                <div className="info-detail-row">
+                  <strong>אימייל:</strong> <span>{user.email}</span>
                 </div>
-              )}
-              {user.social_link && (
-                <div className="info-item">
-                  <strong>רשת חברתית:</strong>{' '}
-                  <a 
-                    href={user.social_link} 
-                    target="_blank" 
-                    rel="noopener noreferrer"
-                    style={{
-                      color: 'var(--color-primary)',
-                      textDecoration: 'underline',
-                      wordBreak: 'break-all'
-                    }}
-                  >
-                    {user.social_link}
-                  </a>
+                <div className="info-detail-row">
+                  <strong>טלפון:</strong> <span>{user.phone || 'לא מוגדר'}</span>
                 </div>
-              )}
-              <div className="info-item">
-                <strong>כתובת:</strong> {user.address || 'לא מוגדר'}
+                <div className="info-detail-row">
+                  <strong>גיל:</strong> <span>{user.age || 'לא מוגדר'}</span>
+                </div>
+                <div className="info-detail-row">
+                  <strong>מגדר:</strong> <span>{user.gender === 'male' ? 'זכר' : user.gender === 'female' ? 'נקבה' : user.gender || 'לא מוגדר'}</span>
+                </div>
+                <div className="info-detail-row">
+                  <strong>מיקום:</strong> <span>{user.location || 'לא מוגדר'}</span>
+                </div>
+                {user.height && (
+                  <div className="info-detail-row">
+                    <strong>גובה:</strong> <span>{user.height} ס"מ</span>
+                  </div>
+                )}
+                {user.employment_status && (
+                  <div className="info-detail-row">
+                    <strong>מצב תעסוקתי:</strong> <span>{user.employment_status}</span>
+                  </div>
+                )}
+                {user.social_link && (
+                  <div className="info-detail-row">
+                    <strong>רשת חברתית:</strong>{' '}
+                    <a 
+                      href={user.social_link} 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      style={{
+                        color: 'var(--color-primary)',
+                        textDecoration: 'underline',
+                        wordBreak: 'break-all'
+                      }}
+                    >
+                      {user.social_link}
+                    </a>
+                  </div>
+                )}
+                <div className="info-detail-row">
+                  <strong>כתובת:</strong> <span>{user.address || 'לא מוגדר'}</span>
+                </div>
               </div>
               {user.bio && (
-                <div className="info-item info-item-full">
+                <div className="info-bio-section">
                   <strong>על עצמי:</strong>
                   <p style={{ marginTop: '0.5rem', whiteSpace: 'pre-wrap' }}>{user.bio}</p>
                 </div>
