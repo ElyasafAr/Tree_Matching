@@ -1,10 +1,12 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { usersAPI, chatAPI, uploadAPI } from '../services/api';
+import { useToast } from '../context/ToastContext';
 import './UserCard.css';
 
 const UserCard = ({ user, showActions = true, onLike }) => {
   const navigate = useNavigate();
+  const { success: showSuccess, error: showError } = useToast();
   const [liked, setLiked] = useState(user?.liked_by_me || false);
   const [loading, setLoading] = useState(false);
 
@@ -21,11 +23,11 @@ const UserCard = ({ user, showActions = true, onLike }) => {
       const response = await usersAPI.likeUser(user.id);
       setLiked(true);
       if (response.data.is_mutual) {
-        alert("זה התאמה! 💚");
+        showSuccess("זה התאמה! 💚");
       }
       if (onLike) onLike();
     } catch (error) {
-      alert(error.response?.data?.error || "שגיאה בלייק");
+      showError(error.response?.data?.error || "שגיאה בלייק");
     }
     setLoading(false);
   };
@@ -36,7 +38,7 @@ const UserCard = ({ user, showActions = true, onLike }) => {
       const response = await chatAPI.startChat(user.id);
       navigate(`/chat/${response.data.chat.id}`);
     } catch (error) {
-      alert("שגיאה בפתיחת צ'אט");
+      showError("שגיאה בפתיחת צ'אט");
     }
   };
 
@@ -54,11 +56,11 @@ const UserCard = ({ user, showActions = true, onLike }) => {
         navigate(`/chat/${response.data.chat.id}`);
       } catch (error) {
         console.error('[CARD REFERRER CHAT] Error:', error.response?.data || error.message);
-        alert("שגיאה בפתיחת צ'אט עם הממליץ: " + (error.response?.data?.error || error.message));
+        showError("שגיאה בפתיחת צ'אט עם הממליץ: " + (error.response?.data?.error || error.message));
       }
     } else {
       console.log('[CARD REFERRER CHAT] No referrer on user:', user);
-      alert("משתמש זה לא הומלץ על ידי אף אחד");
+      showError("משתמש זה לא הומלץ על ידי אף אחד");
     }
   };
 

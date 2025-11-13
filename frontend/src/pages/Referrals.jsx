@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { referralsAPI, chatAPI } from '../services/api';
 import { useNavigate } from 'react-router-dom';
+import { useToast } from '../context/ToastContext';
 import './Referrals.css';
 
 const Referrals = () => {
@@ -10,6 +11,7 @@ const Referrals = () => {
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
+  const { error: showError } = useToast();
 
   useEffect(() => {
     loadData();
@@ -44,11 +46,11 @@ const Referrals = () => {
         navigate(`/chat/${response.data.chat.id}`);
       } catch (error) {
         console.error('[REFERRER CHAT] Error:', error.response?.data || error.message);
-        alert("שגיאה בפתיחת צ'אט: " + (error.response?.data?.error || error.message));
+        showError("שגיאה בפתיחת צ'אט: " + (error.response?.data?.error || error.message));
       }
     } else {
       console.log('[REFERRER CHAT] No referrer found:', myReferrer);
-      alert("לא נמצא ממליץ");
+      showError("לא נמצא ממליץ");
     }
   };
 

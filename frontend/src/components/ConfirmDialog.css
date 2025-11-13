@@ -1,0 +1,121 @@
+.confirm-dialog-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10001;
+  animation: fadeIn 0.2s ease-out;
+  direction: rtl;
+}
+
+.confirm-dialog {
+  background: rgba(255, 255, 255, 0.98);
+  backdrop-filter: blur(20px);
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-xl);
+  max-width: 400px;
+  width: 90%;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  animation: slideUp 0.3s ease-out;
+  text-align: center;
+  border: 2px solid rgba(255, 107, 157, 0.2);
+}
+
+.confirm-dialog-icon {
+  font-size: 3rem;
+  margin-bottom: var(--spacing-md);
+}
+
+.confirm-dialog-message {
+  font-size: var(--font-size-lg);
+  color: var(--color-text-primary);
+  margin-bottom: var(--spacing-xl);
+  line-height: 1.6;
+  font-weight: var(--font-weight-medium);
+}
+
+.confirm-dialog-actions {
+  display: flex;
+  gap: var(--spacing-md);
+  justify-content: center;
+  flex-direction: row-reverse;
+}
+
+.confirm-dialog-btn {
+  padding: var(--spacing-sm) var(--spacing-xl);
+  border: none;
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-semibold);
+  cursor: pointer;
+  transition: all var(--transition-base);
+  font-family: var(--font-primary);
+  min-width: 100px;
+}
+
+.confirm-dialog-btn-cancel {
+  background: var(--color-bg-tertiary);
+  color: var(--color-text-primary);
+  border: 2px solid var(--color-border-medium);
+}
+
+.confirm-dialog-btn-cancel:hover {
+  background: var(--color-bg-secondary);
+  border-color: var(--color-border-dark);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-sm);
+}
+
+.confirm-dialog-btn-confirm {
+  background: var(--gradient-primary);
+  color: white;
+  box-shadow: var(--shadow-colored);
+}
+
+.confirm-dialog-btn-confirm:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-colored-hover);
+  filter: brightness(1.1);
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@media (max-width: 768px) {
+  .confirm-dialog {
+    padding: var(--spacing-lg);
+    max-width: 90%;
+  }
+  
+  .confirm-dialog-actions {
+    flex-direction: column;
+  }
+  
+  .confirm-dialog-btn {
+    width: 100%;
+  }
+}
+

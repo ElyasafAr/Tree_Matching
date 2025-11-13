@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { useToast } from '../context/ToastContext';
 import { usersAPI, uploadAPI, chatAPI } from '../services/api';
 import UserCard from '../components/UserCard';
 import ISRAEL_LOCATIONS from '../data/locations';
@@ -10,6 +11,7 @@ const Profile = () => {
   const { userId } = useParams();
   const navigate = useNavigate();
   const { user: currentUser, updateUser, loading: authLoading } = useAuth();
+  const { success: showSuccess, error: showError, info: showInfo, showConfirm } = useToast();
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [editing, setEditing] = useState(false);
@@ -62,7 +64,7 @@ const Profile = () => {
       console.error('[PROFILE] ❌ Error response data:', error.response?.data);
       console.error('[PROFILE] ❌ Error stack:', error.stack);
       setUser(null);
-      alert("שגיאה בטעינת הפרופיל: " + (error.response?.data?.error || error.message));
+      showError("שגיאה בטעינת הפרופיל: " + (error.response?.data?.error || error.message));
     } finally {
       console.log('[PROFILE] loadUserProfile finished, setting loading to false');
       setLoading(false);
@@ -113,11 +115,11 @@ const Profile = () => {
       setUser(response.data.user);
       setFormData(response.data.user); // Update formData with response to ensure social_link is included
       setEditing(false);
-      alert("הפרופיל עודכן בהצלחה");
+      showSuccess("הפרופיל עודכן בהצלחה");
     } catch (error) {
       console.error('Error updating profile:', error);
       console.error('Error response:', error.response?.data); // Debug log
-      alert("שגיאה בעדכון הפרופיל: " + (error.response?.data?.error || error.message));
+      showError("שגיאה בעדכון הפרופיל: " + (error.response?.data?.error || error.message));
     }
   };
 
@@ -127,14 +129,14 @@ const Profile = () => {
 
     // Validate file size (5MB max)
     if (file.size > 5 * 1024 * 1024) {
-      alert('הקובץ גדול מדי. גודל מקסימלי: 5MB');
+      showError('הקובץ גדול מדי. גודל מקסימלי: 5MB');
       return;
     }
 
     // Validate file type
     const allowedTypes = ['image/png', 'image/jpeg', 'image/jpg', 'image/gif', 'image/webp'];
     if (!allowedTypes.includes(file.type)) {
-      alert('סוג קובץ לא נתמך. יש להעלות תמונה (PNG, JPG, GIF, WEBP)');
+      showError('סוג קובץ לא נתמך. יש להעלות תמונה (PNG, JPG, GIF, WEBP)');
       return;
     }
 
@@ -145,17 +147,24 @@ const Profile = () => {
       updateUser(updatedUser);
       setUser(updatedUser);
       setFormData(updatedUser);
-      alert('תמונת הפרופיל הועלתה בהצלחה!');
+      showSuccess('תמונת הפרופיל הועלתה בהצלחה!');
     } catch (error) {
       console.error('Error uploading image:', error);
-      alert('שגיאה בהעלאת התמונה');
+      showError('שגיאה בהעלאת התמונה');
     } finally {
       setUploadingImage(false);
     }
   };
 
   const handleDeleteImage = async () => {
-    if (!confirm('האם אתה בטוח שברצונך למחוק את תמונת הפרופיל?')) return;
+    const confirmed = await showConfirm(
+      'האם אתה בטוח שברצונך למחוק את תמונת הפרופיל?',
+      null,
+      null,
+      'מחק',
+      'ביטול'
+    );
+    if (!confirmed) return;
 
     try {
       await uploadAPI.deleteProfileImage();
@@ -163,10 +172,10 @@ const Profile = () => {
       updateUser(updatedUser);
       setUser(updatedUser);
       setFormData(updatedUser);
-      alert('תמונת הפרופיל נמחקה בהצלחה');
+      showSuccess('תמונת הפרופיל נמחקה בהצלחה');
     } catch (error) {
       console.error('Error deleting image:', error);
-      alert('שגיאה במחיקת התמונה');
+      showError('שגיאה במחיקת התמונה');
     }
   };
 
@@ -204,7 +213,7 @@ const Profile = () => {
                   const response = await chatAPI.startChat(user.id);
                   navigate(`/chat/${response.data.chat.id}`);
                 } catch (error) {
-                  alert("שגיאה בפתיחת צ'אט: " + (error.response?.data?.error || error.message));
+                  showError("שגיאה בפתיחת צ'אט: " + (error.response?.data?.error || error.message));
                 }
               }}
               className="btn btn-primary"
@@ -634,7 +643,7 @@ const Profile = () => {
                   try {
                     if (navigator.clipboard && navigator.clipboard.writeText) {
                       await navigator.clipboard.writeText(user.referral_code);
-                      alert("קוד הועתק ללוח!");
+                      showSuccess("קוד הועתק ללוח!");
                     } else {
                       // Fallback for older browsers
                       const textArea = document.createElement('textarea');
@@ -645,15 +654,15 @@ const Profile = () => {
                       textArea.select();
                       try {
                         document.execCommand('copy');
-                        alert("קוד הועתק ללוח!");
+                        showSuccess("קוד הועתק ללוח!");
                       } catch (err) {
-                        alert("לא ניתן להעתיק אוטומטית. הקוד הוא: " + user.referral_code);
+                        showInfo("לא ניתן להעתיק אוטומטית. הקוד הוא: " + user.referral_code);
                       }
                       document.body.removeChild(textArea);
                     }
                   } catch (err) {
                     // Final fallback - show the code
-                    alert("לא ניתן להעתיק אוטומטית. הקוד הוא: " + user.referral_code);
+                    showInfo("לא ניתן להעתיק אוטומטית. הקוד הוא: " + user.referral_code);
                   }
                 }}
                 className="btn btn-small"
@@ -675,7 +684,7 @@ const Profile = () => {
                     try {
                       if (navigator.clipboard && navigator.clipboard.writeText) {
                         await navigator.clipboard.writeText(referralLink);
-                        alert("לינק הועתק ללוח!");
+                        showSuccess("לינק הועתק ללוח!");
                       } else {
                         // Fallback for older browsers
                         const textArea = document.createElement('textarea');
@@ -686,14 +695,14 @@ const Profile = () => {
                         textArea.select();
                         try {
                           document.execCommand('copy');
-                          alert("לינק הועתק ללוח!");
+                          showSuccess("לינק הועתק ללוח!");
                         } catch (err) {
-                          alert("לא ניתן להעתיק אוטומטית. הלינק הוא: " + referralLink);
+                          showInfo("לא ניתן להעתיק אוטומטית. הלינק הוא: " + referralLink);
                         }
                         document.body.removeChild(textArea);
                       }
                     } catch (err) {
-                      alert("לא ניתן להעתיק אוטומטית. הלינק הוא: " + referralLink);
+                      showInfo("לא ניתן להעתיק אוטומטית. הלינק הוא: " + referralLink);
                     }
                   }}
                   className="btn btn-small"

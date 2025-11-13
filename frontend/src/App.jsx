@@ -1,5 +1,6 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
+import { ToastProvider } from './context/ToastContext';
 import ProtectedRoute from './utils/ProtectedRoute';
 import Navbar from './components/Navbar';
 
@@ -18,7 +19,8 @@ import './App.css';
 function App() {
   return (
     <AuthProvider>
-      <Router>
+      <ToastProvider>
+        <Router>
         <div className="app">
           <Navbar />
           <div className="app-content">
@@ -102,6 +104,7 @@ function App() {
           </div>
         </div>
       </Router>
+      </ToastProvider>
     </AuthProvider>
   );
 }

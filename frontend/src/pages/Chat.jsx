@@ -2,12 +2,14 @@ import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { chatAPI } from '../services/api';
 import { useAuth } from '../context/AuthContext';
+import { useToast } from '../context/ToastContext';
 import './Chat.css';
 
 const Chat = () => {
   const { chatId } = useParams();
   const navigate = useNavigate();
   const { user: currentUser } = useAuth();
+  const { error: showError, success: showSuccess, showConfirm } = useToast();
   const [conversations, setConversations] = useState([]);
   const [selectedChat, setSelectedChat] = useState(null);
   const [messages, setMessages] = useState([]);
@@ -104,14 +106,22 @@ const Chat = () => {
       loadChatMessages(selectedChat.id, false);
       loadConversations(); // Refresh to update last message
     } catch (error) {
-      alert("שגיאה בשליחת הודעה");
+      showError("שגיאה בשליחת הודעה");
     }
   };
 
   const handleDeleteChat = async () => {
     if (!selectedChat) return;
     
-    if (!confirm(`האם אתה בטוח שברצונך למחוק את השיחה עם ${selectedChat.other_user?.name}?`)) {
+    const confirmed = await showConfirm(
+      `האם אתה בטוח שברצונך למחוק את השיחה עם ${selectedChat.other_user?.name}?`,
+      null,
+      null,
+      'מחק',
+      'ביטול'
+    );
+    
+    if (!confirmed) {
       return;
     }
 
@@ -121,9 +131,9 @@ const Chat = () => {
       setMessages([]);
       loadConversations();
       navigate('/chat');
-      alert('השיחה נמחקה בהצלחה');
+      showSuccess('השיחה נמחקה בהצלחה');
     } catch (error) {
-      alert('שגיאה במחיקת השיחה');
+      showError('שגיאה במחיקת השיחה');
     }
   };
 
