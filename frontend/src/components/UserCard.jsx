@@ -5,11 +5,16 @@ import './UserCard.css';
 
 const UserCard = ({ user, showActions = true, onLike }) => {
   const navigate = useNavigate();
-  const [liked, setLiked] = useState(user.liked_by_me || false);
+  const [liked, setLiked] = useState(user?.liked_by_me || false);
   const [loading, setLoading] = useState(false);
 
+  // Safety check - if user is not provided, don't render
+  if (!user) {
+    return <div className="user-card">טוען...</div>;
+  }
+
   const handleLike = async () => {
-    if (loading) return;
+    if (loading || !user?.id) return;
     
     setLoading(true);
     try {
@@ -26,6 +31,7 @@ const UserCard = ({ user, showActions = true, onLike }) => {
   };
 
   const handleMessage = async () => {
+    if (!user?.id) return;
     try {
       const response = await chatAPI.startChat(user.id);
       navigate(`/chat/${response.data.chat.id}`);
@@ -35,6 +41,7 @@ const UserCard = ({ user, showActions = true, onLike }) => {
   };
 
   const handleViewProfile = () => {
+    if (!user?.id) return;
     navigate(`/user/${user.id}`);
   };
 
@@ -68,7 +75,7 @@ const UserCard = ({ user, showActions = true, onLike }) => {
       </div>
       
       <div className="user-card-content">
-        <h3 className="user-card-name">{user.full_name}</h3>
+        <h3 className="user-card-name">{user.full_name || 'ללא שם'}</h3>
         
         <div className="user-card-info">
           {user.age && <span>גיל: {user.age}</span>}

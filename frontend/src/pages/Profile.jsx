@@ -39,12 +39,22 @@ const Profile = () => {
       console.log('[PROFILE] user.social_link from API:', response.data.user?.social_link); // Debug log
       console.log('[PROFILE] user.social_link type:', typeof response.data.user?.social_link); // Debug log
       console.log('[PROFILE] user.social_link value:', response.data.user?.social_link); // Debug log
-      setUser(response.data.user);
-      setFormData(response.data.user); // Load formData when viewing other user's profile
+      
+      if (response.data?.user) {
+        setUser(response.data.user);
+        setFormData(response.data.user); // Load formData when viewing other user's profile
+      } else {
+        console.error('[PROFILE] No user data in response:', response.data);
+        setUser(null);
+      }
     } catch (error) {
       console.error('Error loading profile:', error);
+      console.error('Error details:', error.response?.data || error.message);
+      setUser(null);
+      alert("שגיאה בטעינת הפרופיל: " + (error.response?.data?.error || error.message));
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   const handleChange = (e) => {

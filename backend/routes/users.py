@@ -51,33 +51,57 @@ def get_user_profile(user_id):
         user_data = user.to_dict()
         print(f"[GET PROFILE] user.social_link from DB: {user.social_link}")  # Debug log
         print(f"[GET PROFILE] user_data.social_link from to_dict: {user_data.get('social_link')}")  # Debug log
-        user_data['full_name'] = encryption_service.decrypt(user.full_name_encrypted)
+        
+        # Decrypt full_name safely
+        try:
+            user_data['full_name'] = encryption_service.decrypt(user.full_name_encrypted)
+        except Exception as e:
+            print(f"[GET PROFILE] Error decrypting full_name: {e}")
+            user_data['full_name'] = "שם לא זמין"
         
         # Convert Cloudinary public_id to full URL
         user_data['profile_image'] = get_cloudinary_url(user.profile_image)
         
         # Get referrer info
-        referral = Referral.query.filter_by(referred_id=user.id).first()
-        if referral:
-            referrer = User.query.get(referral.referrer_id)
-            if referrer:
-                user_data['referred_by'] = {
-                    'id': referrer.id,
-                    'name': encryption_service.decrypt(referrer.full_name_encrypted),
-                    'profile_image': get_cloudinary_url(referrer.profile_image)
-                }
+        try:
+            referral = Referral.query.filter_by(referred_id=user.id).first()
+            if referral:
+                referrer = User.query.get(referral.referrer_id)
+                if referrer:
+                    try:
+                        referrer_name = encryption_service.decrypt(referrer.full_name_encrypted)
+                    except Exception as e:
+                        print(f"[GET PROFILE] Error decrypting referrer name: {e}")
+                        referrer_name = "שם לא זמין"
+                    
+                    user_data['referred_by'] = {
+                        'id': referrer.id,
+                        'name': referrer_name,
+                        'profile_image': get_cloudinary_url(referrer.profile_image)
+                    }
+        except Exception as e:
+            print(f"[GET PROFILE] Error getting referrer info: {e}")
+            # Continue without referrer info
         
         # Check if current user has liked this user
-        match = Match.query.filter_by(
-            user_id=current_user_id,
-            liked_user_id=user_id
-        ).first()
-        user_data['liked_by_me'] = match is not None
-        user_data['is_mutual'] = match.is_mutual if match else False
+        try:
+            match = Match.query.filter_by(
+                user_id=current_user_id,
+                liked_user_id=user_id
+            ).first()
+            user_data['liked_by_me'] = match is not None
+            user_data['is_mutual'] = match.is_mutual if match else False
+        except Exception as e:
+            print(f"[GET PROFILE] Error checking match: {e}")
+            user_data['liked_by_me'] = False
+            user_data['is_mutual'] = False
         
         return jsonify({'user': user_data}), 200
         
     except Exception as e:
+        print(f"[GET PROFILE] Unexpected error: {e}")
+        import traceback
+        traceback.print_exc()
         return jsonify({'error': str(e)}), 500
 
 
