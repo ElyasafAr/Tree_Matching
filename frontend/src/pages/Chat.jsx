@@ -137,41 +137,6 @@ const Chat = () => {
 
   return (
     <div className="chat-container">
-      <div className="chat-sidebar">
-        <h2>שיחות</h2>
-        {conversations.length === 0 ? (
-          <div className="no-conversations">
-            <p>עדיין אין שיחות</p>
-          </div>
-        ) : (
-          <div className="conversations-list">
-            {conversations.map(conv => (
-              <div
-                key={conv.id}
-                className={`conversation-item ${selectedChat?.id === conv.id ? 'active' : ''}`}
-                onClick={() => loadChatMessages(conv.id)}
-              >
-                <div className="conversation-avatar">
-                  {conv.other_user?.profile_image ? (
-                    <img src={conv.other_user.profile_image} alt={conv.other_user.name} />
-                  ) : (
-                    <div className="avatar-placeholder">{conv.other_user?.name[0]}</div>
-                  )}
-                </div>
-                <div className="conversation-info">
-                  <div className="conversation-name">{conv.other_user?.name}</div>
-                  {conv.last_message && (
-                    <div className="conversation-preview">
-                      {conv.last_message.content.substring(0, 50)}...
-                    </div>
-                  )}
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
-
       <div className="chat-main">
         {!selectedChat ? (
           <div className="no-chat-selected">
@@ -230,6 +195,41 @@ const Chat = () => {
               </button>
             </form>
           </>
+        )}
+      </div>
+
+      <div className="chat-sidebar">
+        <h2>שיחות</h2>
+        {conversations.length === 0 ? (
+          <div className="no-conversations">
+            <p>עדיין אין שיחות</p>
+          </div>
+        ) : (
+          <div className="conversations-list">
+            {conversations.map(conv => (
+              <div
+                key={conv.id}
+                className={`conversation-item ${selectedChat?.id === conv.id ? 'active' : ''}`}
+                onClick={() => loadChatMessages(conv.id)}
+              >
+                <div className="conversation-avatar">
+                  {conv.other_user?.profile_image ? (
+                    <img src={conv.other_user.profile_image} alt={conv.other_user.name} />
+                  ) : (
+                    <div className="avatar-placeholder">{conv.other_user?.name[0]}</div>
+                  )}
+                </div>
+                <div className="conversation-info">
+                  <div className="conversation-name">{conv.other_user?.name}</div>
+                  {conv.last_message && (
+                    <div className="conversation-preview">
+                      {conv.last_message.content.substring(0, 50)}...
+                    </div>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
         )}
       </div>
     </div>
