@@ -9,6 +9,19 @@
   justify-content: space-between;
   align-items: center;
   margin-bottom: var(--spacing-2xl);
+  gap: var(--spacing-lg);
+  flex-wrap: wrap;
+}
+
+.profile-edit-btn {
+  white-space: nowrap;
+  min-width: fit-content;
+}
+
+.profile-edit-btn:hover {
+  transform: scale(1.05) translateY(-2px);
+  box-shadow: var(--shadow-colored-hover);
+  filter: brightness(1.1);
 }
 
 .profile-header h1 {
@@ -71,6 +84,17 @@
 .info-item:hover {
   background: var(--color-bg-secondary);
   border-color: var(--color-border-medium);
+}
+
+.info-item-full {
+  grid-column: 1 / -1;
+}
+
+.profile-details-group {
+  background: linear-gradient(135deg, rgba(255, 107, 157, 0.03) 0%, rgba(167, 139, 250, 0.03) 100%);
+  padding: var(--spacing-2xl);
+  border-radius: var(--radius-lg);
+  border: 2px solid rgba(255, 107, 157, 0.1);
 }
 
 .info-item strong {

@@ -402,14 +402,32 @@ const Profile = () => {
       <div className="profile-view">
         <div className="profile-header">
           <h1>הפרופיל שלי</h1>
-          <button onClick={() => setEditing(true)} className="btn btn-primary">
-            ערוך פרופיל
+          <button 
+            onClick={() => setEditing(true)} 
+            className="btn btn-primary profile-edit-btn"
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '0.5rem',
+              padding: '0.875rem 1.75rem',
+              fontSize: 'var(--font-size-base)',
+              fontWeight: 'var(--font-weight-semibold)',
+              background: 'var(--gradient-primary)',
+              color: 'white',
+              border: 'none',
+              borderRadius: 'var(--radius-md)',
+              cursor: 'pointer',
+              transition: 'all 0.3s ease',
+              boxShadow: 'var(--shadow-colored)'
+            }}
+          >
+            ✏️ ערוך פרופיל
           </button>
         </div>
 
         <div className="profile-info">
-          <div className="info-section">
-            <h2>פרטים אישיים</h2>
+          <div className="info-section profile-details-group">
+            <h2>📋 כל הפרטים</h2>
             <div className="info-grid">
               <div className="info-item">
                 <strong>שם:</strong> {user.full_name}
@@ -424,7 +442,7 @@ const Profile = () => {
                 <strong>גיל:</strong> {user.age || 'לא מוגדר'}
               </div>
               <div className="info-item">
-                <strong>מגדר:</strong> {user.gender || 'לא מוגדר'}
+                <strong>מגדר:</strong> {user.gender === 'male' ? 'זכר' : user.gender === 'female' ? 'נקבה' : user.gender || 'לא מוגדר'}
               </div>
               <div className="info-item">
                 <strong>מיקום:</strong> {user.location || 'לא מוגדר'}
@@ -442,15 +460,14 @@ const Profile = () => {
               <div className="info-item">
                 <strong>כתובת:</strong> {user.address || 'לא מוגדר'}
               </div>
+              {user.bio && (
+                <div className="info-item info-item-full">
+                  <strong>על עצמי:</strong>
+                  <p style={{ marginTop: '0.5rem', whiteSpace: 'pre-wrap' }}>{user.bio}</p>
+                </div>
+              )}
             </div>
           </div>
-
-          {user.bio && (
-            <div className="info-section">
-              <h2>על עצמי</h2>
-              <p>{user.bio}</p>
-            </div>
-          )}
 
           <div className="info-section">
             <h2>קוד ההמלצה שלי</h2>
