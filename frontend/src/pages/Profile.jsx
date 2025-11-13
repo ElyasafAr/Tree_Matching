@@ -169,6 +169,23 @@ const Profile = () => {
                     <strong>מצב תעסוקתי:</strong> {user.employment_status}
                   </div>
                 )}
+                {user.social_link && (
+                  <div className="info-item">
+                    <strong>רשת חברתית:</strong>{' '}
+                    <a 
+                      href={user.social_link} 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      style={{
+                        color: 'var(--color-primary)',
+                        textDecoration: 'underline',
+                        wordBreak: 'break-all'
+                      }}
+                    >
+                      {user.social_link}
+                    </a>
+                  </div>
+                )}
               </div>
             </div>
 
@@ -349,6 +366,21 @@ const Profile = () => {
             </div>
 
             <div className="form-group">
+              <label>לינק לרשת חברתית</label>
+              <input
+                type="url"
+                name="social_link"
+                value={formData.social_link || ''}
+                onChange={handleChange}
+                className="form-input"
+                placeholder="https://www.instagram.com/yourprofile"
+              />
+              <small style={{ display: 'block', marginTop: '0.25rem', color: 'var(--color-text-muted)', fontSize: '0.875rem' }}>
+                לדוגמה: Instagram, Facebook, LinkedIn וכו'
+              </small>
+            </div>
+
+            <div className="form-group">
               <label>טלפון</label>
               <input
                 type="tel"
@@ -457,6 +489,23 @@ const Profile = () => {
               {user.employment_status && (
                 <div className="info-item">
                   <strong>מצב תעסוקתי:</strong> {user.employment_status}
+                </div>
+              )}
+              {user.social_link && (
+                <div className="info-item">
+                  <strong>רשת חברתית:</strong>{' '}
+                  <a 
+                    href={user.social_link} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    style={{
+                      color: 'var(--color-primary)',
+                      textDecoration: 'underline',
+                      wordBreak: 'break-all'
+                    }}
+                  >
+                    {user.social_link}
+                  </a>
                 </div>
               )}
               <div className="info-item">

@@ -77,6 +77,9 @@ def register():
         employment_status = data.get('employment_status')
         employment_status = employment_status.strip() if employment_status and employment_status.strip() else None
         
+        social_link = data.get('social_link')
+        social_link = social_link.strip() if social_link and social_link.strip() else None
+        
         # Create new user
         new_user = User(
             email_hash=email_hash,
@@ -90,6 +93,7 @@ def register():
             location=location,
             height=height,
             employment_status=employment_status,
+            social_link=social_link,
             interests=data.get('interests') if data.get('interests') else None,
             bio=data.get('bio') if data.get('bio') else None,
             profile_image=data.get('profile_image') if data.get('profile_image') else None

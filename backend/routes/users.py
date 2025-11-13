@@ -270,6 +270,8 @@ def update_profile():
             user.height = int(data['height']) if data['height'] and str(data['height']).strip() else None
         if 'employment_status' in data:
             user.employment_status = data['employment_status'].strip() if data['employment_status'] and data['employment_status'].strip() else None
+        if 'social_link' in data:
+            user.social_link = data['social_link'].strip() if data['social_link'] and data['social_link'].strip() else None
         if 'interests' in data:
             user.interests = data['interests'] if data['interests'] else None
         if 'bio' in data:

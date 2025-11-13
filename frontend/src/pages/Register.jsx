@@ -18,6 +18,7 @@ const Register = () => {
     location: '',
     height: '',
     employment_status: '',
+    social_link: '',
     bio: '',
     referral_code: ''
   });
@@ -272,6 +273,22 @@ const Register = () => {
                 <option value="אחר">אחר</option>
               </select>
             </div>
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="social_link">לינק לרשת חברתית (אופציונלי)</label>
+            <input
+              type="url"
+              id="social_link"
+              name="social_link"
+              value={formData.social_link}
+              onChange={handleChange}
+              className="form-input"
+              placeholder="https://www.instagram.com/yourprofile"
+            />
+            <small style={{ display: 'block', marginTop: '0.25rem', color: 'var(--color-text-muted)', fontSize: '0.875rem' }}>
+              לדוגמה: Instagram, Facebook, LinkedIn וכו'
+            </small>
           </div>
 
           <div className="form-group">
