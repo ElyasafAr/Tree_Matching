@@ -139,6 +139,19 @@ const Home = () => {
         </div>
       ) : (
         <div className="search-layout">
+          <div className="user-detail-panel">
+            {selectedUser ? (
+              <div className="user-detail-content">
+                <UserCard user={selectedUser} showActions={true} onLike={loadUsers} />
+              </div>
+            ) : (
+              <div className="no-user-selected">
+                <h3>👆 בחר משתמש מהרשימה</h3>
+                <p>לחץ על משתמש מהרשימה כדי לראות פרטים מלאים</p>
+              </div>
+            )}
+          </div>
+
           <div className="users-sidebar">
             <h3>תוצאות חיפוש ({users.length})</h3>
             <div className="users-list-compact">
@@ -189,19 +202,6 @@ const Home = () => {
                 >
                   →
                 </button>
-              </div>
-            )}
-          </div>
-
-          <div className="user-detail-panel">
-            {selectedUser ? (
-              <div className="user-detail-content">
-                <UserCard user={selectedUser} showActions={true} onLike={loadUsers} />
-              </div>
-            ) : (
-              <div className="no-user-selected">
-                <h3>👆 בחר משתמש מהרשימה</h3>
-                <p>לחץ על משתמש מהרשימה כדי לראות פרטים מלאים</p>
               </div>
             )}
           </div>
