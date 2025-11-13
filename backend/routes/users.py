@@ -347,23 +347,41 @@ def update_profile():
         db.session.commit()
         print(f"[UPDATE PROFILE] After commit, user.social_link = '{user.social_link}'")
         
+        # Verify directly from database
+        from sqlalchemy import text
+        result = db.session.execute(text("SELECT social_link FROM users WHERE id = :user_id"), {"user_id": current_user_id})
+        db_value = result.fetchone()
+        print(f"[UPDATE PROFILE] Direct DB query result: '{db_value[0] if db_value and db_value[0] else 'NULL/EMPTY'}'")
+        
         # Refresh user from database to verify
         db.session.refresh(user)
         print(f"[UPDATE PROFILE] After refresh, user.social_link = '{user.social_link}'")
         
+        # Query user again to ensure we have the latest data
+        user = User.query.get(current_user_id)
+        print(f"[UPDATE PROFILE] After re-query, user.social_link = '{user.social_link}'")
+        
         # Return updated user data
         user_data = user.to_dict()
+        print(f"[UPDATE PROFILE] user_data from to_dict() keys: {list(user_data.keys())}")
+        print(f"[UPDATE PROFILE] user_data['social_link'] = '{user_data.get('social_link')}'")
         user_data['email'] = encryption_service.decrypt(user.email_encrypted)
         user_data['full_name'] = encryption_service.decrypt(user.full_name_encrypted)
         user_data['phone'] = encryption_service.decrypt(user.phone_encrypted) if user.phone_encrypted else None
         user_data['address'] = encryption_service.decrypt(user.address_encrypted) if user.address_encrypted else None
         
         print(f"[UPDATE PROFILE] Returning user_data with social_link: {user_data.get('social_link')}")  # Debug log
+        print(f"[UPDATE PROFILE] Full user_data before jsonify: {user_data}")
+        print(f"[UPDATE PROFILE] 'social_link' in user_data: {'social_link' in user_data}")
         
-        return jsonify({
+        response_data = {
             'message': 'Profile updated successfully',
             'user': user_data
-        }), 200
+        }
+        print(f"[UPDATE PROFILE] Response data before jsonify: {response_data}")
+        print(f"[UPDATE PROFILE] 'social_link' in response_data['user']: {'social_link' in response_data['user']}")
+        
+        return jsonify(response_data), 200
         
     except Exception as e:
         db.session.rollback()
