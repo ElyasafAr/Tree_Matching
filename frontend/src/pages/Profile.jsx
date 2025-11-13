@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { usersAPI, uploadAPI, chatAPI } from '../services/api';
@@ -9,7 +9,7 @@ import './Profile.css';
 const Profile = () => {
   const { userId } = useParams();
   const navigate = useNavigate();
-  const { user: currentUser, updateUser } = useAuth();
+  const { user: currentUser, updateUser, loading: authLoading } = useAuth();
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [editing, setEditing] = useState(false);
@@ -17,27 +17,23 @@ const Profile = () => {
   const [uploadingImage, setUploadingImage] = useState(false);
   const fileInputRef = useRef(null);
 
-  const isOwnProfile = !userId || parseInt(userId) === currentUser?.id;
-
-  useEffect(() => {
-    console.log('[PROFILE] useEffect triggered - userId:', userId, 'currentUser?.id:', currentUser?.id, 'isOwnProfile:', isOwnProfile);
-    
-    if (isOwnProfile) {
-      console.log('[PROFILE] Setting currentUser:', currentUser); // Debug log
-      console.log('[PROFILE] currentUser.social_link:', currentUser?.social_link); // Debug log
-      if (currentUser) {
-        setUser(currentUser);
-        setFormData(currentUser || {});
-      }
-      setLoading(false);
-    } else {
-      console.log('[PROFILE] Loading other user profile, userId:', userId);
-      loadUserProfile();
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+  const isOwnProfile = useMemo(() => {
+    return !userId || parseInt(userId) === currentUser?.id;
   }, [userId, currentUser?.id]);
 
-  const loadUserProfile = async () => {
+  // Helper function to ensure social_link is a valid URL
+  const getValidSocialLink = (link) => {
+    if (!link) return null;
+    const trimmedLink = link.trim();
+    if (!trimmedLink) return null;
+    // If it doesn't start with http:// or https://, add https://
+    if (!trimmedLink.match(/^https?:\/\//i)) {
+      return `https://${trimmedLink}`;
+    }
+    return trimmedLink;
+  };
+
+  const loadUserProfile = useCallback(async () => {
     console.log('[PROFILE] loadUserProfile called with userId:', userId);
     setLoading(true);
     try {
@@ -71,7 +67,30 @@ const Profile = () => {
       console.log('[PROFILE] loadUserProfile finished, setting loading to false');
       setLoading(false);
     }
-  };
+  }, [userId]);
+
+  useEffect(() => {
+    console.log('[PROFILE] useEffect triggered - userId:', userId, 'currentUser?.id:', currentUser?.id, 'isOwnProfile:', isOwnProfile);
+    
+    // Don't run if still loading auth
+    if (authLoading) {
+      console.log('[PROFILE] Auth still loading, skipping...');
+      return;
+    }
+    
+    if (isOwnProfile) {
+      console.log('[PROFILE] Setting currentUser:', currentUser); // Debug log
+      console.log('[PROFILE] currentUser.social_link:', currentUser?.social_link); // Debug log
+      if (currentUser) {
+        setUser(currentUser);
+        setFormData(currentUser || {});
+      }
+      setLoading(false);
+    } else {
+      console.log('[PROFILE] Loading other user profile, userId:', userId);
+      loadUserProfile();
+    }
+  }, [userId, currentUser?.id, isOwnProfile, loadUserProfile, authLoading]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -228,23 +247,31 @@ const Profile = () => {
                       <strong>מצב תעסוקתי:</strong> <span>{user.employment_status}</span>
                     </div>
                   )}
-                  {user.social_link && (
-                    <div className="info-detail-row">
-                      <strong>רשת חברתית:</strong>{' '}
-                      <a 
-                        href={user.social_link} 
-                        target="_blank" 
-                        rel="noopener noreferrer"
-                        style={{
-                          color: 'var(--color-primary)',
-                          textDecoration: 'underline',
-                          wordBreak: 'break-all'
-                        }}
-                      >
-                        {user.social_link}
-                      </a>
-                    </div>
-                  )}
+                  {user.social_link && (() => {
+                    const validLink = getValidSocialLink(user.social_link);
+                    return validLink ? (
+                      <div className="info-detail-row">
+                        <strong>רשת חברתית:</strong>{' '}
+                        <a 
+                          href={validLink} 
+                          target="_blank" 
+                          rel="noopener noreferrer"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            window.open(validLink, '_blank', 'noopener,noreferrer');
+                          }}
+                          style={{
+                            color: 'var(--color-primary)',
+                            textDecoration: 'underline',
+                            wordBreak: 'break-all',
+                            cursor: 'pointer'
+                          }}
+                        >
+                          {user.social_link}
+                        </a>
+                      </div>
+                    ) : null;
+                  })()}
                 </div>
                 {user.bio && (
                   <div className="info-bio-section">
@@ -551,23 +578,31 @@ const Profile = () => {
                     <strong>מצב תעסוקתי:</strong> <span>{user.employment_status}</span>
                   </div>
                 )}
-                {user.social_link && (
-                  <div className="info-detail-row">
-                    <strong>רשת חברתית:</strong>{' '}
-                    <a 
-                      href={user.social_link} 
-                      target="_blank" 
-                      rel="noopener noreferrer"
-                      style={{
-                        color: 'var(--color-primary)',
-                        textDecoration: 'underline',
-                        wordBreak: 'break-all'
-                      }}
-                    >
-                      {user.social_link}
-                    </a>
-                  </div>
-                )}
+                {user.social_link && (() => {
+                  const validLink = getValidSocialLink(user.social_link);
+                  return validLink ? (
+                    <div className="info-detail-row">
+                      <strong>רשת חברתית:</strong>{' '}
+                      <a 
+                        href={validLink} 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          window.open(validLink, '_blank', 'noopener,noreferrer');
+                        }}
+                        style={{
+                          color: 'var(--color-primary)',
+                          textDecoration: 'underline',
+                          wordBreak: 'break-all',
+                          cursor: 'pointer'
+                        }}
+                      >
+                        {user.social_link}
+                      </a>
+                    </div>
+                  ) : null;
+                })()}
                 <div className="info-detail-row">
                   <strong>כתובת:</strong> <span>{user.address || 'לא מוגדר'}</span>
                 </div>
