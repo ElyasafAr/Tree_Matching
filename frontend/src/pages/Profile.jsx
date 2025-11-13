@@ -100,7 +100,12 @@ const Profile = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log('[PROFILE] Submitting formData:', formData); // Debug log
+    console.log('[PROFILE] ========== SUBMIT START ==========');
+    console.log('[PROFILE] Submitting formData:', formData);
+    console.log('[PROFILE] formData.social_link:', formData.social_link);
+    console.log('[PROFILE] formData.social_link type:', typeof formData.social_link);
+    console.log('[PROFILE] formData.social_link value:', formData.social_link);
+    console.log('[PROFILE] formData keys:', Object.keys(formData));
     try {
       const response = await usersAPI.updateProfile(formData);
       console.log('[PROFILE] Response:', response.data); // Debug log
@@ -251,24 +256,26 @@ const Profile = () => {
                     const validLink = getValidSocialLink(user.social_link);
                     return validLink ? (
                       <div className="info-detail-row">
-                        <strong>רשת חברתית:</strong>{' '}
-                        <a 
-                          href={validLink} 
-                          target="_blank" 
-                          rel="noopener noreferrer"
-                          onClick={(e) => {
-                            e.preventDefault();
-                            window.open(validLink, '_blank', 'noopener,noreferrer');
-                          }}
-                          style={{
-                            color: 'var(--color-primary)',
-                            textDecoration: 'underline',
-                            wordBreak: 'break-all',
-                            cursor: 'pointer'
-                          }}
-                        >
-                          {user.social_link}
-                        </a>
+                        <strong>לינק לפרופיל שלי ברשת החברתית:</strong>
+                        <div style={{ marginTop: '0.25rem' }}>
+                          <a 
+                            href={validLink} 
+                            target="_blank" 
+                            rel="noopener noreferrer"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              window.open(validLink, '_blank', 'noopener,noreferrer');
+                            }}
+                            style={{
+                              color: 'var(--color-primary)',
+                              textDecoration: 'underline',
+                              wordBreak: 'break-all',
+                              cursor: 'pointer'
+                            }}
+                          >
+                            {user.social_link}
+                          </a>
+                        </div>
                       </div>
                     ) : null;
                   })()}
@@ -582,24 +589,26 @@ const Profile = () => {
                   const validLink = getValidSocialLink(user.social_link);
                   return validLink ? (
                     <div className="info-detail-row">
-                      <strong>רשת חברתית:</strong>{' '}
-                      <a 
-                        href={validLink} 
-                        target="_blank" 
-                        rel="noopener noreferrer"
-                        onClick={(e) => {
-                          e.preventDefault();
-                          window.open(validLink, '_blank', 'noopener,noreferrer');
-                        }}
-                        style={{
-                          color: 'var(--color-primary)',
-                          textDecoration: 'underline',
-                          wordBreak: 'break-all',
-                          cursor: 'pointer'
-                        }}
-                      >
-                        {user.social_link}
-                      </a>
+                      <strong>לינק לפרופיל שלי ברשת החברתית:</strong>
+                      <div style={{ marginTop: '0.25rem' }}>
+                        <a 
+                          href={validLink} 
+                          target="_blank" 
+                          rel="noopener noreferrer"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            window.open(validLink, '_blank', 'noopener,noreferrer');
+                          }}
+                          style={{
+                            color: 'var(--color-primary)',
+                            textDecoration: 'underline',
+                            wordBreak: 'break-all',
+                            cursor: 'pointer'
+                          }}
+                        >
+                          {user.social_link}
+                        </a>
+                      </div>
                     </div>
                   ) : null;
                 })()}

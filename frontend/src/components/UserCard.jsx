@@ -13,18 +13,6 @@ const UserCard = ({ user, showActions = true, onLike }) => {
     return <div className="user-card">טוען...</div>;
   }
 
-  // Helper function to ensure social_link is a valid URL
-  const getValidSocialLink = (link) => {
-    if (!link) return null;
-    const trimmedLink = link.trim();
-    if (!trimmedLink) return null;
-    // If it doesn't start with http:// or https://, add https://
-    if (!trimmedLink.match(/^https?:\/\//i)) {
-      return `https://${trimmedLink}`;
-    }
-    return trimmedLink;
-  };
-
   const handleLike = async () => {
     if (loading || !user?.id) return;
     
@@ -98,32 +86,6 @@ const UserCard = ({ user, showActions = true, onLike }) => {
         {user.bio && (
           <p className="user-card-bio">{user.bio}</p>
         )}
-        
-        {user.social_link && (() => {
-          const validLink = getValidSocialLink(user.social_link);
-          return validLink ? (
-            <div className="user-card-social">
-              <a 
-                href={validLink} 
-                target="_blank" 
-                rel="noopener noreferrer"
-                onClick={(e) => {
-                  e.preventDefault();
-                  window.open(validLink, '_blank', 'noopener,noreferrer');
-                }}
-                style={{
-                  color: 'var(--color-primary)',
-                  textDecoration: 'underline',
-                  fontSize: '0.9rem',
-                  wordBreak: 'break-all',
-                  cursor: 'pointer'
-                }}
-              >
-                🔗 רשת חברתית
-              </a>
-            </div>
-          ) : null;
-        })()}
         
         {user.referred_by && (
           <div className="user-card-referrer">
