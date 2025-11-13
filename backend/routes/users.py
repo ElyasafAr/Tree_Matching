@@ -41,10 +41,16 @@ def get_cloudinary_url(public_id):
 def get_user_profile(user_id):
     """Get user profile by ID"""
     try:
+        print(f"[GET PROFILE] ========== START ==========")
+        print(f"[GET PROFILE] Request received for user_id: {user_id}")
         current_user_id = get_current_user_id()
+        print(f"[GET PROFILE] Current user ID: {current_user_id}")
+        
         user = User.query.get(user_id)
+        print(f"[GET PROFILE] User query result: {user}")
         
         if not user:
+            print(f"[GET PROFILE] ❌ User not found for ID: {user_id}")
             return jsonify({'error': 'User not found'}), 404
         
         # Basic user data
@@ -96,12 +102,17 @@ def get_user_profile(user_id):
             user_data['liked_by_me'] = False
             user_data['is_mutual'] = False
         
+        print(f"[GET PROFILE] ✅ Successfully prepared user data")
+        print(f"[GET PROFILE] Returning user_data keys: {list(user_data.keys())}")
+        print(f"[GET PROFILE] ========== END ==========")
         return jsonify({'user': user_data}), 200
         
     except Exception as e:
-        print(f"[GET PROFILE] Unexpected error: {e}")
+        print(f"[GET PROFILE] ❌❌❌ UNEXPECTED ERROR: {e}")
         import traceback
+        print(f"[GET PROFILE] Full traceback:")
         traceback.print_exc()
+        print(f"[GET PROFILE] ========== ERROR END ==========")
         return jsonify({'error': str(e)}), 500
 
 

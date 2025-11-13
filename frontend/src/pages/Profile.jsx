@@ -20,39 +20,55 @@ const Profile = () => {
   const isOwnProfile = !userId || parseInt(userId) === currentUser?.id;
 
   useEffect(() => {
+    console.log('[PROFILE] useEffect triggered - userId:', userId, 'currentUser?.id:', currentUser?.id, 'isOwnProfile:', isOwnProfile);
+    
     if (isOwnProfile) {
       console.log('[PROFILE] Setting currentUser:', currentUser); // Debug log
       console.log('[PROFILE] currentUser.social_link:', currentUser?.social_link); // Debug log
-      setUser(currentUser);
-      setFormData(currentUser || {});
+      if (currentUser) {
+        setUser(currentUser);
+        setFormData(currentUser || {});
+      }
       setLoading(false);
     } else {
+      console.log('[PROFILE] Loading other user profile, userId:', userId);
       loadUserProfile();
     }
-  }, [userId, currentUser]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [userId, currentUser?.id]);
 
   const loadUserProfile = async () => {
+    console.log('[PROFILE] loadUserProfile called with userId:', userId);
     setLoading(true);
     try {
+      console.log('[PROFILE] Calling API getProfile for userId:', userId);
       const response = await usersAPI.getProfile(userId);
-      console.log('[PROFILE] Loaded user data:', response.data.user); // Debug log
-      console.log('[PROFILE] user.social_link from API:', response.data.user?.social_link); // Debug log
-      console.log('[PROFILE] user.social_link type:', typeof response.data.user?.social_link); // Debug log
-      console.log('[PROFILE] user.social_link value:', response.data.user?.social_link); // Debug log
+      console.log('[PROFILE] API Response received:', response);
+      console.log('[PROFILE] Response data:', response.data);
+      console.log('[PROFILE] Loaded user data:', response.data?.user); // Debug log
+      console.log('[PROFILE] user.social_link from API:', response.data?.user?.social_link); // Debug log
+      console.log('[PROFILE] user.social_link type:', typeof response.data?.user?.social_link); // Debug log
+      console.log('[PROFILE] user.social_link value:', response.data?.user?.social_link); // Debug log
       
       if (response.data?.user) {
+        console.log('[PROFILE] Setting user state with data:', response.data.user);
         setUser(response.data.user);
         setFormData(response.data.user); // Load formData when viewing other user's profile
+        console.log('[PROFILE] User state updated successfully');
       } else {
-        console.error('[PROFILE] No user data in response:', response.data);
+        console.error('[PROFILE] ❌ No user data in response:', response.data);
         setUser(null);
       }
     } catch (error) {
-      console.error('Error loading profile:', error);
-      console.error('Error details:', error.response?.data || error.message);
+      console.error('[PROFILE] ❌ ERROR loading profile:', error);
+      console.error('[PROFILE] ❌ Error message:', error.message);
+      console.error('[PROFILE] ❌ Error response:', error.response);
+      console.error('[PROFILE] ❌ Error response data:', error.response?.data);
+      console.error('[PROFILE] ❌ Error stack:', error.stack);
       setUser(null);
       alert("שגיאה בטעינת הפרופיל: " + (error.response?.data?.error || error.message));
     } finally {
+      console.log('[PROFILE] loadUserProfile finished, setting loading to false');
       setLoading(false);
     }
   };
@@ -130,17 +146,27 @@ const Profile = () => {
     }
   };
 
-  if (loading) return <div className="loading">טוען...</div>;
-  if (!user) return <div className="loading">משתמש לא נמצא</div>;
-  
   // Debug log when user is loaded
   useEffect(() => {
+    console.log('[PROFILE] Render check - loading:', loading, 'user:', user, 'isOwnProfile:', isOwnProfile);
     if (user) {
-      console.log('[PROFILE] User state updated:', user);
-      console.log('[PROFILE] user.social_link in state:', user.social_link);
-      console.log('[PROFILE] formData.social_link:', formData.social_link);
+      console.log('[PROFILE] ✅ User state updated:', user);
+      console.log('[PROFILE] ✅ user.social_link in state:', user.social_link);
+      console.log('[PROFILE] ✅ formData.social_link:', formData.social_link);
     }
-  }, [user, formData]);
+  }, [loading, user, isOwnProfile, formData]);
+
+  if (loading) {
+    console.log('[PROFILE] Rendering loading state');
+    return <div className="loading">טוען...</div>;
+  }
+  
+  if (!user) {
+    console.log('[PROFILE] Rendering no user state');
+    return <div className="loading">משתמש לא נמצא</div>;
+  }
+  
+  console.log('[PROFILE] Rendering profile for user:', user.id, user.full_name);
 
   if (!isOwnProfile) {
     return (
