@@ -295,6 +295,14 @@ def update_profile():
             return jsonify({'error': 'User not found'}), 404
         
         data = request.get_json()
+        print(f"[UPDATE PROFILE] ========== START ==========")
+        print(f"[UPDATE PROFILE] Received data keys: {list(data.keys())}")
+        print(f"[UPDATE PROFILE] social_link in data: {'social_link' in data}")
+        if 'social_link' in data:
+            print(f"[UPDATE PROFILE] social_link value: '{data['social_link']}'")
+            print(f"[UPDATE PROFILE] social_link type: {type(data['social_link'])}")
+            print(f"[UPDATE PROFILE] social_link is None: {data['social_link'] is None}")
+            print(f"[UPDATE PROFILE] social_link bool: {bool(data['social_link'])}")
         
         # Update public fields
         if 'age' in data:
@@ -308,9 +316,20 @@ def update_profile():
         if 'employment_status' in data:
             user.employment_status = data['employment_status'].strip() if data['employment_status'] and data['employment_status'].strip() else None
         if 'social_link' in data:
-            social_link_value = data['social_link'].strip() if data['social_link'] and data['social_link'].strip() else None
+            # Handle social_link - allow empty strings to be saved as None
+            social_link_raw = data['social_link']
+            print(f"[UPDATE PROFILE] social_link_raw: '{social_link_raw}' (type: {type(social_link_raw)})")
+            
+            if social_link_raw is None:
+                social_link_value = None
+            elif isinstance(social_link_raw, str):
+                social_link_value = social_link_raw.strip() if social_link_raw.strip() else None
+            else:
+                social_link_value = str(social_link_raw).strip() if str(social_link_raw).strip() else None
+            
+            print(f"[UPDATE PROFILE] Setting social_link to: '{social_link_value}' (type: {type(social_link_value)})")
             user.social_link = social_link_value
-            print(f"[UPDATE PROFILE] Setting social_link to: {social_link_value}")  # Debug log
+            print(f"[UPDATE PROFILE] user.social_link after assignment: '{user.social_link}'")
         if 'interests' in data:
             user.interests = data['interests'] if data['interests'] else None
         if 'bio' in data:
@@ -324,8 +343,13 @@ def update_profile():
         if 'address' in data:
             user.address_encrypted = encryption_service.encrypt(data['address']) if data['address'] else None
         
+        print(f"[UPDATE PROFILE] Before commit, user.social_link = '{user.social_link}'")
         db.session.commit()
-        print(f"[UPDATE PROFILE] After commit, user.social_link = {user.social_link}")  # Debug log
+        print(f"[UPDATE PROFILE] After commit, user.social_link = '{user.social_link}'")
+        
+        # Refresh user from database to verify
+        db.session.refresh(user)
+        print(f"[UPDATE PROFILE] After refresh, user.social_link = '{user.social_link}'")
         
         # Return updated user data
         user_data = user.to_dict()
