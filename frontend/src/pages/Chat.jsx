@@ -28,11 +28,33 @@ const Chat = () => {
     return d1Str === d2Str;
   };
   
+  // Helper function to parse UTC date string correctly
+  const parseUTCDate = (utcTimeString) => {
+    if (!utcTimeString) return null;
+    
+    // Ensure the string is treated as UTC
+    let timeString = utcTimeString;
+    if (!timeString.endsWith('Z')) {
+      const hasTimezoneOffset = /[+-]\d{2}:\d{2}$/.test(timeString);
+      if (!hasTimezoneOffset) {
+        timeString = timeString + 'Z';
+      }
+    }
+    
+    const date = new Date(timeString);
+    return isNaN(date.getTime()) ? null : date;
+  };
+  
   // Helper function to format date and time according to user's timezone
   const formatMessageTime = (utcTimeString) => {
     if (!utcTimeString) return '';
     
-    const messageDate = new Date(utcTimeString);
+    const messageDate = parseUTCDate(utcTimeString);
+    if (!messageDate) {
+      console.error('[TIMEZONE ERROR] Invalid date string:', utcTimeString);
+      return '';
+    }
+    
     const now = new Date();
     
     const timeStr = messageDate.toLocaleTimeString('he-IL', {
@@ -83,12 +105,31 @@ const Chat = () => {
     return `${dateStr}, ${timeStr}`;
   };
   
+  // Helper function to parse UTC date string correctly
+  const parseUTCDate = (utcTimeString) => {
+    if (!utcTimeString) return null;
+    
+    // Ensure the string is treated as UTC
+    let timeString = utcTimeString;
+    if (!timeString.endsWith('Z')) {
+      const hasTimezoneOffset = /[+-]\d{2}:\d{2}$/.test(timeString);
+      if (!hasTimezoneOffset) {
+        timeString = timeString + 'Z';
+      }
+    }
+    
+    const date = new Date(timeString);
+    return isNaN(date.getTime()) ? null : date;
+  };
+  
   // Helper function to check if we should show a date separator
   const shouldShowDateSeparator = (currentMsg, previousMsg) => {
     if (!previousMsg) return true; // First message always shows date
     
-    const currentDate = new Date(currentMsg.sent_at);
-    const previousDate = new Date(previousMsg.sent_at);
+    const currentDate = parseUTCDate(currentMsg.sent_at);
+    const previousDate = parseUTCDate(previousMsg.sent_at);
+    
+    if (!currentDate || !previousDate) return false;
     
     return !isSameDay(currentDate, previousDate);
   };
@@ -97,7 +138,9 @@ const Chat = () => {
   const formatDateSeparator = (utcTimeString) => {
     if (!utcTimeString) return '';
     
-    const messageDate = new Date(utcTimeString);
+    const messageDate = parseUTCDate(utcTimeString);
+    if (!messageDate) return '';
+    
     const now = new Date();
     
     // If message is from today
@@ -195,6 +238,11 @@ const Chat = () => {
   const loadChatMessages = async (id, setAsSelected = true) => {
     try {
       const response = await chatAPI.getMessages(id);
+      // Debug: Check first message timestamp format
+      if (response.data.messages && response.data.messages.length > 0) {
+        console.log('[CHAT DEBUG] First message sent_at:', response.data.messages[0].sent_at);
+        console.log('[CHAT DEBUG] User timezone:', userTimeZone);
+      }
       setMessages(response.data.messages);
       if (setAsSelected) {
         // Try to find chat in conversations list
