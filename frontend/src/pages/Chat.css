@@ -1,6 +1,7 @@
 .chat-container {
-  display: flex;
-  gap: 0;
+  display: grid;
+  grid-template-columns: 4fr 1fr;
+  gap: var(--spacing-xl);
   height: calc(100vh - 80px);
   max-width: 1400px;
   margin: 0 auto;
@@ -12,6 +13,8 @@
   overflow: hidden;
   animation: fadeInUp 0.5s ease;
   direction: ltr; /* Force LTR for layout */
+  padding: var(--spacing-xl);
+  min-height: 600px;
 }
 
 .chat-sidebar {
@@ -19,9 +22,10 @@
   background: var(--color-bg-secondary);
   display: flex;
   flex-direction: column;
-  min-width: 300px;
-  width: 300px;
-  flex-shrink: 0;
+  border-radius: 0 var(--radius-lg) var(--radius-lg) 0;
+  max-height: 80vh;
+  overflow-y: auto;
+  order: 2;
   direction: rtl;
   text-align: right;
 }
@@ -118,10 +122,15 @@
   height: 100%;
   min-height: 0;
   overflow: hidden;
-  flex: 1;
   min-width: 0;
+  order: 1;
   direction: rtl; /* RTL for content inside */
   text-align: right;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+  border: 2px solid rgba(255, 107, 157, 0.1);
 }
 
 .chat-header {
@@ -325,18 +334,31 @@
   font-weight: var(--font-weight-medium);
 }
 
+@media (max-width: 1024px) {
+  .chat-container {
+    grid-template-columns: 3fr 1fr;
+    gap: var(--spacing-lg);
+  }
+  
+  .chat-sidebar {
+    max-height: 80vh;
+  }
+}
+
 @media (max-width: 768px) {
   .chat-container {
     grid-template-columns: 2fr 1fr;
+    gap: var(--spacing-md);
     height: calc(100vh - 80px);
     max-height: calc(100vh - 80px);
     border-radius: 0;
     margin: 0;
+    padding: var(--spacing-md);
   }
   
   .chat-sidebar {
-    /* Keep visible but make it narrower */
-    min-width: 0;
+    max-height: 80vh;
+    padding: var(--spacing-md);
   }
 
   .chat-sidebar h2 {
@@ -412,12 +434,14 @@
 @media (max-width: 480px) {
   .chat-container {
     grid-template-columns: 2fr 1fr;
+    gap: var(--spacing-sm);
     height: calc(100vh - 80px);
     max-height: calc(100vh - 80px);
+    padding: var(--spacing-sm);
   }
 
   .chat-sidebar {
-    min-width: 0;
+    padding: var(--spacing-sm);
   }
 
   .chat-sidebar h2 {
