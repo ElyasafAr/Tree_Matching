@@ -8,6 +8,7 @@ const Navbar = () => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const [unreadCount, setUnreadCount] = useState(0);
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
 
   useEffect(() => {
     if (user) {
@@ -19,6 +20,15 @@ const Navbar = () => {
       return () => clearInterval(interval);
     }
   }, [user]);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth <= 768);
+    };
+    
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   const loadUnreadCount = async () => {
     try {
@@ -56,10 +66,12 @@ const Navbar = () => {
                   <span className="unread-badge">{unreadCount}</span>
                 )}
               </Link>
-              <Link to="/referrals" className="navbar-item">ההמלצות שלי</Link>
+              <Link to="/referrals" className="navbar-item">
+                {isMobile ? 'המלצות' : 'ההמלצות שלי'}
+              </Link>
               <Link to="/profile" className="navbar-item">פרופיל</Link>
               <button onClick={handleLogout} className="navbar-item navbar-logout">
-                התנתק
+                {isMobile ? 'יציאה' : 'התנתק'}
               </button>
             </div>
           </>

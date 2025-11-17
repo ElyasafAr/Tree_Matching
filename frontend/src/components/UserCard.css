@@ -197,6 +197,12 @@
   filter: brightness(1.1);
 }
 
+.btn-primary:active {
+  transform: scale(0.98) translateY(0);
+  box-shadow: 0 4px 12px rgba(167, 139, 250, 0.3);
+  filter: brightness(0.95);
+}
+
 .btn-secondary {
   background: linear-gradient(135deg, #FFFFFF 0%, #F8F9FA 100%);
   color: var(--color-text-primary);
@@ -211,6 +217,14 @@
   box-shadow: var(--shadow-md);
 }
 
+.btn-secondary:active {
+  background: var(--color-primary);
+  color: white;
+  border-color: var(--color-primary);
+  transform: translateY(0);
+  box-shadow: var(--shadow-sm);
+}
+
 .btn-like {
   background: var(--gradient-primary);
   color: white;
@@ -222,6 +236,13 @@
   box-shadow: var(--shadow-colored-hover);
   transform: scale(1.05) translateY(-2px);
   filter: brightness(1.15);
+  animation: none;
+}
+
+.btn-like:active {
+  transform: scale(0.98) translateY(0);
+  box-shadow: var(--shadow-sm);
+  filter: brightness(0.9);
   animation: none;
 }
 
@@ -260,11 +281,15 @@
   .user-card-actions {
     flex-direction: column;
     gap: var(--spacing-sm);
+    width: 100%;
   }
 
   .btn {
-    min-width: 100%;
+    width: 100%;
+    min-width: 0;
     padding: 0.75rem 1rem;
+    flex-shrink: 0;
+    box-sizing: border-box;
   }
 }
 
