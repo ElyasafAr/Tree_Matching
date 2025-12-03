@@ -18,6 +18,7 @@ const Register = () => {
     location: '',
     height: '',
     employment_status: '',
+    religious_status: '',
     social_link: '',
     bio: '',
     referral_code: ''
@@ -271,6 +272,27 @@ const Register = () => {
                 <option value="עצמאי/ת">עצמאי/ת</option>
                 <option value="בפנסיה">בפנסיה</option>
                 <option value="אחר">אחר</option>
+              </select>
+            </div>
+          </div>
+
+          <div className="form-row">
+            <div className="form-group">
+              <label htmlFor="religious_status">מצב דת</label>
+              <select
+                id="religious_status"
+                name="religious_status"
+                value={formData.religious_status}
+                onChange={handleChange}
+                className="form-input"
+              >
+                <option value="">בחר מצב דת</option>
+                <option value="חילוני">חילוני</option>
+                <option value="מסורתי">מסורתי</option>
+                <option value="דתי לאומי">דתי לאומי</option>
+                <option value="דתי">דתי</option>
+                <option value="חרדי">חרדי</option>
+                <option value="חוזר בתשובה">חוזר בתשובה</option>
               </select>
             </div>
           </div>

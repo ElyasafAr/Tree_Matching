@@ -225,6 +225,23 @@ def create_app():
                 else:
                     print("ℹ️  Migration: 'employment_status' column already exists")
                 
+                # Add religious_status column if missing
+                if 'religious_status' not in columns:
+                    try:
+                        db.session.execute(text("""
+                            ALTER TABLE users 
+                            ADD COLUMN religious_status VARCHAR(100);
+                        """))
+                        db.session.commit()
+                        print("✅ Migration: Added 'religious_status' column to users table")
+                    except Exception as migration_error:
+                        print(f"❌ Migration ERROR adding 'religious_status': {migration_error}")
+                        import traceback
+                        traceback.print_exc()
+                        db.session.rollback()
+                else:
+                    print("ℹ️  Migration: 'religious_status' column already exists")
+                
                 # Add social_link column if missing
                 if 'social_link' not in columns:
                     try:
@@ -241,6 +258,45 @@ def create_app():
                         db.session.rollback()
                 else:
                     print("ℹ️  Migration: 'social_link' column already exists")
+                
+                # Add is_suspended column if missing
+                if 'is_suspended' not in columns:
+                    try:
+                        db.session.execute(text("""
+                            ALTER TABLE users 
+                            ADD COLUMN is_suspended BOOLEAN DEFAULT FALSE;
+                        """))
+                        db.session.commit()
+                        print("✅ Migration: Added 'is_suspended' column to users table")
+                    except Exception as migration_error:
+                        print(f"❌ Migration ERROR adding 'is_suspended': {migration_error}")
+                        import traceback
+                        traceback.print_exc()
+                        db.session.rollback()
+                else:
+                    print("ℹ️  Migration: 'is_suspended' column already exists")
+                
+                # Create blocks table if it doesn't exist
+                if 'blocks' not in inspector.get_table_names():
+                    try:
+                        db.session.execute(text("""
+                            CREATE TABLE blocks (
+                                id SERIAL PRIMARY KEY,
+                                blocker_id INTEGER NOT NULL REFERENCES users(id),
+                                blocked_id INTEGER NOT NULL REFERENCES users(id),
+                                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                                UNIQUE(blocker_id, blocked_id)
+                            );
+                        """))
+                        db.session.commit()
+                        print("✅ Migration: Created 'blocks' table")
+                    except Exception as migration_error:
+                        print(f"❌ Migration ERROR creating 'blocks' table: {migration_error}")
+                        import traceback
+                        traceback.print_exc()
+                        db.session.rollback()
+                else:
+                    print("ℹ️  Migration: 'blocks' table already exists")
             else:
                 # Table doesn't exist yet, db.create_all() will create it with all columns
                 print("ℹ️  Users table doesn't exist yet, will be created with all columns")

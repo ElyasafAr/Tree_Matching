@@ -28,10 +28,12 @@ class User(db.Model):
     location = db.Column(db.String(100), nullable=True)  # City/Region
     height = db.Column(db.Integer, nullable=True)  # Height in cm
     employment_status = db.Column(db.String(100), nullable=True)  # Employment status
+    religious_status = db.Column(db.String(100), nullable=True)  # Religious status
     social_link = db.Column(db.String(500), nullable=True)  # Social media profile link
     interests = db.Column(db.Text, nullable=True)  # JSON string of interests
     bio = db.Column(db.Text, nullable=True)  # Open text field
     profile_image = db.Column(db.String(500), nullable=True)  # URL or path
+    is_suspended = db.Column(db.Boolean, default=False, nullable=False)  # Suspended users cannot login
     
     # Referral code for this user (for others to register through them)
     referral_code = db.Column(db.String(20), unique=True, nullable=False)
@@ -73,6 +75,7 @@ class User(db.Model):
             'location': self.location,
             'height': self.height,
             'employment_status': self.employment_status,
+            'religious_status': self.religious_status,
             'social_link': self.social_link,
             'interests': self.interests,
             'bio': self.bio,
@@ -207,6 +210,33 @@ class Match(db.Model):
             'user_id': self.user_id,
             'liked_user_id': self.liked_user_id,
             'is_mutual': self.is_mutual,
+            'created_at': self.created_at.isoformat() if self.created_at else None
+        }
+
+
+class Block(db.Model):
+    """Block model - tracks blocked users (unlike/block)"""
+    __tablename__ = 'blocks'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    blocker_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)  # User who blocked
+    blocked_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)  # User who was blocked
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    # Ensure a user can only block another user once
+    __table_args__ = (
+        db.UniqueConstraint('blocker_id', 'blocked_id', name='unique_block'),
+    )
+    
+    # Relationships
+    blocker = db.relationship('User', foreign_keys=[blocker_id], backref='blocks_given')
+    blocked = db.relationship('User', foreign_keys=[blocked_id], backref='blocks_received')
+    
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'blocker_id': self.blocker_id,
+            'blocked_id': self.blocked_id,
             'created_at': self.created_at.isoformat() if self.created_at else None
         }
 

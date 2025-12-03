@@ -218,11 +218,11 @@
 }
 
 .btn-secondary:active {
-  background: var(--color-primary);
+  background: var(--color-primary-dark);
   color: white;
-  border-color: var(--color-primary);
+  border-color: var(--color-primary-dark);
   transform: translateY(0);
-  box-shadow: var(--shadow-sm);
+  box-shadow: 0 2px 8px rgba(229, 90, 138, 0.4);
 }
 
 .btn-like {
@@ -248,6 +248,24 @@
 
 .btn-liked {
   background: var(--color-success);
+  color: white;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+.btn-block {
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+  color: white;
+}
+
+.btn-block:hover {
+  background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+  transform: scale(1.05) translateY(-2px);
+  box-shadow: 0 8px 24px rgba(239, 68, 68, 0.4);
+}
+
+.btn-blocked {
+  background: #6b7280;
   color: white;
   cursor: not-allowed;
   box-shadow: none;

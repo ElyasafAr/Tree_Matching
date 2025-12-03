@@ -12,6 +12,8 @@ import Profile from './pages/Profile';
 import Matches from './pages/Matches';
 import Chat from './pages/Chat';
 import Referrals from './pages/Referrals';
+import Admin from './pages/Admin';
+import BlockedUsers from './pages/BlockedUsers';
 import SecretAdminInit from './pages/SecretAdminInit';
 
 import './App.css';
@@ -94,6 +96,22 @@ function App() {
                 element={
                   <ProtectedRoute>
                     <Referrals />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/admin"
+                element={
+                  <ProtectedRoute>
+                    <Admin />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/blocked"
+                element={
+                  <ProtectedRoute>
+                    <BlockedUsers />
                   </ProtectedRoute>
                 }
               />

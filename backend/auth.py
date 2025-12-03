@@ -77,6 +77,9 @@ def register():
         employment_status = data.get('employment_status')
         employment_status = employment_status.strip() if employment_status and employment_status.strip() else None
         
+        religious_status = data.get('religious_status')
+        religious_status = religious_status.strip() if religious_status and religious_status.strip() else None
+        
         social_link = data.get('social_link')
         social_link = social_link.strip() if social_link and social_link.strip() else None
         
@@ -93,6 +96,7 @@ def register():
             location=location,
             height=height,
             employment_status=employment_status,
+            religious_status=religious_status,
             social_link=social_link,
             interests=data.get('interests') if data.get('interests') else None,
             bio=data.get('bio') if data.get('bio') else None,
@@ -154,6 +158,11 @@ def login():
         if not user:
             print(f"[LOGIN DEBUG] ❌ User not found for email: {email_normalized}")
             return jsonify({'error': 'Invalid email or password'}), 401
+        
+        # Check if user is suspended
+        if user.is_suspended:
+            print(f"[LOGIN DEBUG] ❌ User is suspended: {email_normalized}")
+            return jsonify({'error': 'Your account has been suspended. Please contact support.'}), 403
         
         print(f"[LOGIN DEBUG] User found: ID={user.id}")
         

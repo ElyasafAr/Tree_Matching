@@ -12,6 +12,7 @@ const Profile = () => {
   const navigate = useNavigate();
   const { user: currentUser, updateUser, loading: authLoading } = useAuth();
   const { success: showSuccess, error: showError, info: showInfo, showConfirm } = useToast();
+  const [blocked, setBlocked] = useState(false);
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [editing, setEditing] = useState(false);
@@ -52,6 +53,7 @@ const Profile = () => {
         console.log('[PROFILE] Setting user state with data:', response.data.user);
         setUser(response.data.user);
         setFormData(response.data.user); // Load formData when viewing other user's profile
+        setBlocked(response.data.user.blocked_by_me || false);
         console.log('[PROFILE] User state updated successfully');
       } else {
         console.error('[PROFILE] ❌ No user data in response:', response.data);
@@ -86,6 +88,7 @@ const Profile = () => {
       if (currentUser) {
         setUser(currentUser);
         setFormData(currentUser || {});
+        setBlocked(currentUser.blocked_by_me || false);
       }
       setLoading(false);
     } else {
@@ -207,19 +210,76 @@ const Profile = () => {
         <div className="profile-view">
           <div className="profile-header">
             <h1>פרופיל משתמש</h1>
-            <button
-              onClick={async () => {
-                try {
-                  const response = await chatAPI.startChat(user.id);
-                  navigate(`/chat/${response.data.chat.id}`);
-                } catch (error) {
-                  showError("שגיאה בפתיחת צ'אט: " + (error.response?.data?.error || error.message));
-                }
-              }}
-              className="btn btn-primary"
-            >
-              💬 צור קשר
-            </button>
+            <div style={{ display: 'flex', gap: 'var(--spacing-sm)', flexWrap: 'wrap' }}>
+              {!blocked ? (
+                <>
+                  <button
+                    onClick={async () => {
+                      try {
+                        const response = await chatAPI.startChat(user.id);
+                        navigate(`/chat/${response.data.chat.id}`);
+                      } catch (error) {
+                        showError("שגיאה בפתיחת צ'אט: " + (error.response?.data?.error || error.message));
+                      }
+                    }}
+                    className="btn btn-primary"
+                  >
+                    💬 צור קשר
+                  </button>
+                  <button
+                    onClick={async () => {
+                      const confirmed = await showConfirm(
+                        `האם אתה בטוח שברצונך לחסום את ${user.full_name}?`,
+                        'המשתמש לא יופיע בחיפוש שלך ולא תוכל לראות את הפרופיל שלו. תוכל לבטל את החסימה בכל עת.',
+                        null,
+                        'חסום',
+                        'ביטול'
+                      );
+                      if (!confirmed) return;
+                      
+                      try {
+                        await usersAPI.blockUser(user.id);
+                        setBlocked(true);
+                        showSuccess('המשתמש נחסם בהצלחה');
+                        // Reload user data
+                        loadUserProfile();
+                      } catch (error) {
+                        showError(error.response?.data?.error || 'שגיאה בחסימת המשתמש');
+                      }
+                    }}
+                    className="btn btn-danger"
+                  >
+                    🚫 חסום
+                  </button>
+                </>
+              ) : (
+                <button
+                  onClick={async () => {
+                    const confirmed = await showConfirm(
+                      `האם אתה בטוח שברצונך לבטל את החסימה של ${user.full_name}?`,
+                      'המשתמש יופיע שוב בחיפוש שלך ותוכל לראות את הפרופיל שלו.',
+                      null,
+                      'בטל חסימה',
+                      'ביטול'
+                    );
+                    if (!confirmed) return;
+                    
+                    try {
+                      await usersAPI.unblockUser(user.id);
+                      setBlocked(false);
+                      showSuccess('החסימה בוטלה בהצלחה');
+                      // Reload user data
+                      loadUserProfile();
+                    } catch (error) {
+                      showError(error.response?.data?.error || 'שגיאה בביטול החסימה');
+                    }
+                  }}
+                  className="btn btn-success"
+                >
+                  🔓 בטל חסימה
+                </button>
+              )}
+            </div>
           </div>
 
           <div className="profile-info">
@@ -259,6 +319,11 @@ const Profile = () => {
                   {user.employment_status && (
                     <div className="info-detail-row">
                       <strong>מצב תעסוקתי:</strong> <span>{user.employment_status}</span>
+                    </div>
+                  )}
+                  {user.religious_status && (
+                    <div className="info-detail-row">
+                      <strong>מצב דת:</strong> <span>{user.religious_status}</span>
                     </div>
                   )}
                   {user.social_link && (() => {
@@ -468,6 +533,24 @@ const Profile = () => {
             </div>
 
             <div className="form-group">
+              <label>מצב דת</label>
+              <select
+                name="religious_status"
+                value={formData.religious_status || ''}
+                onChange={handleChange}
+                className="form-input"
+              >
+                <option value="">בחר מצב דת</option>
+                <option value="חילוני">חילוני</option>
+                <option value="מסורתי">מסורתי</option>
+                <option value="דתי לאומי">דתי לאומי</option>
+                <option value="דתי">דתי</option>
+                <option value="חרדי">חרדי</option>
+                <option value="חוזר בתשובה">חוזר בתשובה</option>
+              </select>
+            </div>
+
+            <div className="form-group">
               <label>לינק לרשת חברתית</label>
               <input
                 type="url"
@@ -592,6 +675,11 @@ const Profile = () => {
                 {user.employment_status && (
                   <div className="info-detail-row">
                     <strong>מצב תעסוקתי:</strong> <span>{user.employment_status}</span>
+                  </div>
+                )}
+                {user.religious_status && (
+                  <div className="info-detail-row">
+                    <strong>מצב דת:</strong> <span>{user.religious_status}</span>
                   </div>
                 )}
                 {user.social_link && (() => {

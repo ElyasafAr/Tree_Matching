@@ -1,14 +1,22 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { usersAPI, chatAPI, uploadAPI } from '../services/api';
 import { useToast } from '../context/ToastContext';
 import './UserCard.css';
 
-const UserCard = ({ user, showActions = true, onLike }) => {
+const UserCard = ({ user, showActions = true, onLike, onBlock }) => {
   const navigate = useNavigate();
-  const { success: showSuccess, error: showError } = useToast();
+  const { success: showSuccess, error: showError, showConfirm } = useToast();
   const [liked, setLiked] = useState(user?.liked_by_me || false);
+  const [blocked, setBlocked] = useState(user?.blocked_by_me || false);
   const [loading, setLoading] = useState(false);
+  const [blocking, setBlocking] = useState(false);
+
+  // Update blocked state when user changes
+  useEffect(() => {
+    setBlocked(user?.blocked_by_me || false);
+    setLiked(user?.liked_by_me || false);
+  }, [user]);
 
   // Safety check - if user is not provided, don't render
   if (!user) {
@@ -62,6 +70,33 @@ const UserCard = ({ user, showActions = true, onLike }) => {
       console.log('[CARD REFERRER CHAT] No referrer on user:', user);
       showError("משתמש זה לא הומלץ על ידי אף אחד");
     }
+  };
+
+  const handleBlock = async () => {
+    if (blocking || !user?.id) return;
+    
+    const confirmed = await showConfirm(
+      `האם אתה בטוח שברצונך לחסום את ${user.full_name}?`,
+      'המשתמש לא יופיע בחיפוש שלך ולא תוכל לראות את הפרופיל שלו. תוכל לבטל את החסימה בכל עת.',
+      null,
+      'חסום',
+      'ביטול'
+    );
+    
+    if (!confirmed) return;
+    
+    setBlocking(true);
+    try {
+      await usersAPI.blockUser(user.id);
+      setBlocked(true);
+      setLiked(false); // Remove like if exists
+      showSuccess("המשתמש נחסם בהצלחה");
+      if (onBlock) onBlock();
+      if (onLike) onLike(); // Refresh list
+    } catch (error) {
+      showError(error.response?.data?.error || "שגיאה בחסימת המשתמש");
+    }
+    setBlocking(false);
   };
 
   return (
@@ -130,6 +165,20 @@ const UserCard = ({ user, showActions = true, onLike }) => {
             >
               💬 שלח הודעה
             </button>
+            
+            {!blocked ? (
+              <button 
+                className="btn btn-block"
+                onClick={handleBlock}
+                disabled={blocking}
+              >
+                {blocking ? '...' : '🚫 חסום'}
+              </button>
+            ) : (
+              <button className="btn btn-blocked" disabled>
+                ✓ חסום
+              </button>
+            )}
           </div>
         )}
       </div>

@@ -98,6 +98,17 @@
   width: 0;
 }
 
+.navbar-admin {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white !important;
+}
+
+.navbar-admin:hover {
+  background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+  color: white !important;
+  transform: translateY(-2px);
+}
+
 .navbar-logout {
   background: transparent;
   border: 1px solid var(--color-border-medium);

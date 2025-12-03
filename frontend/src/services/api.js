@@ -38,6 +38,15 @@ export const usersAPI = {
   likeUser: (userId) => api.post(`/users/like/${userId}`),
   getMatches: () => api.get('/users/matches'),
   updateProfile: (data) => api.put('/users/profile', data),
+  checkIsAdmin: () => api.get('/users/is-admin'),
+  getAdminStats: () => api.get('/users/admin/stats'),
+  getAllUsers: (params) => api.get('/users/admin/users', { params }),
+  suspendUser: (userId) => api.post(`/users/admin/users/${userId}/suspend`),
+  unsuspendUser: (userId) => api.post(`/users/admin/users/${userId}/unsuspend`),
+  deleteUser: (userId) => api.delete(`/users/admin/users/${userId}`),
+  blockUser: (userId) => api.post(`/users/block/${userId}`),
+  unblockUser: (userId) => api.post(`/users/unblock/${userId}`),
+  getBlockedUsers: () => api.get('/users/blocked'),
 };
 
 // Chat endpoints

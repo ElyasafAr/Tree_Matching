@@ -9,6 +9,7 @@ const Home = () => {
   const [selectedUser, setSelectedUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [filters, setFilters] = useState({
+    name: '',
     gender: '',
     min_age: '',
     max_age: '',
@@ -28,6 +29,9 @@ const Home = () => {
       const params = { page, per_page: 12 };
       
       // Add only non-empty filters
+      if (filters.name && filters.name.trim()) {
+        params.name = filters.name.trim();
+      }
       if (filters.gender && filters.gender.trim()) {
         params.gender = filters.gender;
       }
@@ -62,6 +66,7 @@ const Home = () => {
 
   const handleClearFilters = () => {
     setFilters({
+      name: '',
       gender: '',
       min_age: '',
       max_age: '',
@@ -79,6 +84,15 @@ const Home = () => {
 
       <div className="filters-container">
         <div className="filters">
+          <input
+            type="text"
+            name="name"
+            value={filters.name}
+            onChange={handleFilterChange}
+            placeholder="חיפוש לפי שם..."
+            className="filter-input"
+          />
+
           <select
             name="gender"
             value={filters.gender}

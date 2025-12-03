@@ -1,6 +1,6 @@
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required
-from models import db, User, Match, Referral
+from models import db, User, Match, Referral, Chat, Message, Block
 from encryption import encryption_service
 from utils import get_current_user_id
 from sqlalchemy import or_, and_
@@ -102,6 +102,17 @@ def get_user_profile(user_id):
             user_data['liked_by_me'] = False
             user_data['is_mutual'] = False
         
+        # Check if current user has blocked this user
+        try:
+            block = Block.query.filter_by(
+                blocker_id=current_user_id,
+                blocked_id=user_id
+            ).first()
+            user_data['blocked_by_me'] = block is not None
+        except Exception as e:
+            print(f"[GET PROFILE] Error checking block: {e}")
+            user_data['blocked_by_me'] = False
+        
         print(f"[GET PROFILE] ✅ Successfully prepared user data")
         print(f"[GET PROFILE] Returning user_data keys: {list(user_data.keys())}")
         print(f"[GET PROFILE] ========== END ==========")
@@ -124,7 +135,8 @@ def search_users():
         current_user_id = get_current_user_id()
         
         # Get query parameters
-        query = request.args.get('q', '')
+        query = request.args.get('q', '').strip()
+        name_search = request.args.get('name', '').strip()
         gender = request.args.get('gender')
         min_age = request.args.get('min_age', type=int)
         max_age = request.args.get('max_age', type=int)
@@ -132,14 +144,23 @@ def search_users():
         page = request.args.get('page', 1, type=int)
         per_page = request.args.get('per_page', 20, type=int)
         
-        # Build query
-        users_query = User.query.filter(User.id != current_user_id)
+        # Build query - exclude suspended users and blocked users
+        users_query = User.query.filter(User.id != current_user_id).filter(User.is_suspended == False)
+        
+        # Get list of blocked user IDs (both ways - users I blocked and users who blocked me)
+        blocked_by_me = [b.blocked_id for b in Block.query.filter_by(blocker_id=current_user_id).all()]
+        blocked_me = [b.blocker_id for b in Block.query.filter_by(blocked_id=current_user_id).all()]
+        all_blocked_ids = set(blocked_by_me + blocked_me)
+        
+        # Exclude blocked users
+        if all_blocked_ids:
+            users_query = users_query.filter(~User.id.in_(all_blocked_ids))
         
         # Debug
         total_users = User.query.count()
         print(f"[SEARCH DEBUG] Total users in DB: {total_users}")
         print(f"[SEARCH DEBUG] Current user ID: {current_user_id}")
-        print(f"[SEARCH DEBUG] Filters - gender: {gender}, min_age: {min_age}, max_age: {max_age}, location: {location}")
+        print(f"[SEARCH DEBUG] Filters - name: {name_search}, gender: {gender}, min_age: {min_age}, max_age: {max_age}, location: {location}")
         
         # Apply filters
         if gender:
@@ -154,12 +175,34 @@ def search_users():
         if location:
             users_query = users_query.filter(User.location.ilike(f'%{location}%'))
         
-        # Pagination
-        pagination = users_query.paginate(page=page, per_page=per_page, error_out=False)
-        users = pagination.items
+        # Get all users first (for name search which requires decryption)
+        all_users = users_query.all()
+        
+        # Filter by name if provided (requires decryption)
+        if name_search:
+            name_search_lower = name_search.lower()
+            filtered_users = []
+            for user in all_users:
+                try:
+                    full_name = encryption_service.decrypt(user.full_name_encrypted)
+                    if name_search_lower in full_name.lower():
+                        filtered_users.append(user)
+                except Exception as e:
+                    print(f"[SEARCH DEBUG] Error decrypting name for user {user.id}: {e}")
+                    # Skip users with decryption errors
+            all_users = filtered_users
+        
+        # Pagination (manual since we filtered by name)
+        total_filtered = len(all_users)
+        start_idx = (page - 1) * per_page
+        end_idx = start_idx + per_page
+        users = all_users[start_idx:end_idx]
         
         print(f"[SEARCH DEBUG] Users found after filters: {len(users)}")
-        print(f"[SEARCH DEBUG] Total matching users: {pagination.total}")
+        print(f"[SEARCH DEBUG] Total matching users: {total_filtered}")
+        
+        # Calculate total pages
+        total_pages = (total_filtered + per_page - 1) // per_page if total_filtered > 0 else 1
         
         # Prepare response
         users_data = []
@@ -187,8 +230,8 @@ def search_users():
             'pagination': {
                 'page': page,
                 'per_page': per_page,
-                'total': pagination.total,
-                'pages': pagination.pages
+                'total': total_filtered,
+                'pages': total_pages
             }
         }), 200
         
@@ -348,6 +391,8 @@ def update_profile():
             user.height = int(data['height']) if data['height'] and str(data['height']).strip() else None
         if 'employment_status' in data:
             user.employment_status = data['employment_status'].strip() if data['employment_status'] and data['employment_status'].strip() else None
+        if 'religious_status' in data:
+            user.religious_status = data['religious_status'].strip() if data['religious_status'] and data['religious_status'].strip() else None
         if 'social_link' in data:
             # Handle social_link - allow empty strings to be saved as None
             social_link_raw = data['social_link']
@@ -434,5 +479,392 @@ def update_profile():
         
     except Exception as e:
         db.session.rollback()
+        return jsonify({'error': str(e)}), 500
+
+
+@users_bp.route('/is-admin', methods=['GET'])
+@jwt_required()
+def check_is_admin():
+    """Check if current user is the root/admin (has no referrer)"""
+    try:
+        current_user_id = get_current_user_id()
+        
+        # Check if user has a referrer - if not, they are the root/admin
+        referral = Referral.query.filter_by(referred_id=current_user_id).first()
+        is_admin = referral is None
+        
+        return jsonify({'is_admin': is_admin}), 200
+        
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@users_bp.route('/admin/stats', methods=['GET'])
+@jwt_required()
+def get_admin_stats():
+    """Get admin statistics - only accessible to root user"""
+    try:
+        current_user_id = get_current_user_id()
+        
+        # Verify user is admin (root)
+        referral = Referral.query.filter_by(referred_id=current_user_id).first()
+        if referral:
+            return jsonify({'error': 'Unauthorized - Admin access only'}), 403
+        
+        # Get statistics
+        total_users = User.query.count()
+        total_referrals = Referral.query.count()
+        total_matches = Match.query.count()
+        total_mutual_matches = Match.query.filter_by(is_mutual=True).count()
+        total_chats = Chat.query.count()
+        total_messages = Message.query.count()
+        
+        # Get users by gender
+        from sqlalchemy import func
+        gender_stats = db.session.query(
+            User.gender,
+            func.count(User.id).label('count')
+        ).group_by(User.gender).all()
+        
+        gender_breakdown = {gender or 'לא מוגדר': count for gender, count in gender_stats}
+        
+        # Get recent users (last 7 days)
+        from datetime import datetime, timedelta
+        week_ago = datetime.utcnow() - timedelta(days=7)
+        recent_users = User.query.filter(User.created_at >= week_ago).count()
+        
+        # Get active users (logged in last 7 days)
+        active_users = User.query.filter(User.last_active >= week_ago).count()
+        
+        return jsonify({
+            'total_users': total_users,
+            'total_referrals': total_referrals,
+            'total_matches': total_matches,
+            'total_mutual_matches': total_mutual_matches,
+            'total_chats': total_chats,
+            'total_messages': total_messages,
+            'gender_breakdown': gender_breakdown,
+            'recent_users': recent_users,
+            'active_users': active_users
+        }), 200
+        
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@users_bp.route('/admin/users', methods=['GET'])
+@jwt_required()
+def get_all_users():
+    """Get all users for admin - only accessible to root user"""
+    try:
+        current_user_id = get_current_user_id()
+        
+        # Verify user is admin (root)
+        referral = Referral.query.filter_by(referred_id=current_user_id).first()
+        if referral:
+            return jsonify({'error': 'Unauthorized - Admin access only'}), 403
+        
+        # Get query parameters
+        page = request.args.get('page', 1, type=int)
+        per_page = request.args.get('per_page', 50, type=int)
+        search_name = request.args.get('name', '').strip()
+        
+        # Build query
+        users_query = User.query
+        
+        # Filter by name if provided
+        if search_name:
+            search_name_lower = search_name.lower()
+            all_users = users_query.all()
+            filtered_users = []
+            for user in all_users:
+                try:
+                    full_name = encryption_service.decrypt(user.full_name_encrypted)
+                    if search_name_lower in full_name.lower():
+                        filtered_users.append(user)
+                except Exception as e:
+                    print(f"[ADMIN USERS] Error decrypting name for user {user.id}: {e}")
+            users_query = User.query.filter(User.id.in_([u.id for u in filtered_users]))
+        
+        # Pagination
+        pagination = users_query.paginate(page=page, per_page=per_page, error_out=False)
+        users = pagination.items
+        
+        # Prepare response
+        users_data = []
+        for user in users:
+            try:
+                user_dict = user.to_dict()
+                user_dict['full_name'] = encryption_service.decrypt(user.full_name_encrypted)
+                user_dict['email'] = encryption_service.decrypt(user.email_encrypted)
+                user_dict['is_suspended'] = user.is_suspended
+                
+                # Convert Cloudinary public_id to full URL
+                user_dict['profile_image'] = get_cloudinary_url(user.profile_image)
+                
+                # Get referral count
+                referral_count = Referral.query.filter_by(referrer_id=user.id).count()
+                user_dict['referrals_count'] = referral_count
+                
+                # Check if user is root/admin
+                has_referrer = Referral.query.filter_by(referred_id=user.id).first() is not None
+                user_dict['is_root'] = not has_referrer
+                
+                users_data.append(user_dict)
+            except Exception as e:
+                print(f"[ADMIN USERS] Error processing user {user.id}: {e}")
+                continue
+        
+        return jsonify({
+            'users': users_data,
+            'pagination': {
+                'page': page,
+                'per_page': per_page,
+                'total': pagination.total,
+                'pages': pagination.pages
+            }
+        }), 200
+        
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@users_bp.route('/admin/users/<int:user_id>/suspend', methods=['POST'])
+@jwt_required()
+def suspend_user(user_id):
+    """Suspend a user - only accessible to root user"""
+    try:
+        current_user_id = get_current_user_id()
+        
+        # Verify user is admin (root)
+        referral = Referral.query.filter_by(referred_id=current_user_id).first()
+        if referral:
+            return jsonify({'error': 'Unauthorized - Admin access only'}), 403
+        
+        # Cannot suspend yourself
+        if current_user_id == user_id:
+            return jsonify({'error': 'Cannot suspend yourself'}), 400
+        
+        # Get user
+        user = User.query.get(user_id)
+        if not user:
+            return jsonify({'error': 'User not found'}), 404
+        
+        # Check if user is root (cannot suspend root)
+        has_referrer = Referral.query.filter_by(referred_id=user_id).first() is not None
+        if not has_referrer:
+            return jsonify({'error': 'Cannot suspend root user'}), 400
+        
+        # Suspend user
+        user.is_suspended = True
+        db.session.commit()
+        
+        return jsonify({
+            'message': 'User suspended successfully',
+            'user_id': user_id
+        }), 200
+        
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500
+
+
+@users_bp.route('/admin/users/<int:user_id>/unsuspend', methods=['POST'])
+@jwt_required()
+def unsuspend_user(user_id):
+    """Unsuspend a user - only accessible to root user"""
+    try:
+        current_user_id = get_current_user_id()
+        
+        # Verify user is admin (root)
+        referral = Referral.query.filter_by(referred_id=current_user_id).first()
+        if referral:
+            return jsonify({'error': 'Unauthorized - Admin access only'}), 403
+        
+        # Get user
+        user = User.query.get(user_id)
+        if not user:
+            return jsonify({'error': 'User not found'}), 404
+        
+        # Unsuspend user
+        user.is_suspended = False
+        db.session.commit()
+        
+        return jsonify({
+            'message': 'User unsuspended successfully',
+            'user_id': user_id
+        }), 200
+        
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500
+
+
+@users_bp.route('/admin/users/<int:user_id>', methods=['DELETE'])
+@jwt_required()
+def delete_user(user_id):
+    """Delete a user - only accessible to root user"""
+    try:
+        current_user_id = get_current_user_id()
+        
+        # Verify user is admin (root)
+        referral = Referral.query.filter_by(referred_id=current_user_id).first()
+        if referral:
+            return jsonify({'error': 'Unauthorized - Admin access only'}), 403
+        
+        # Cannot delete yourself
+        if current_user_id == user_id:
+            return jsonify({'error': 'Cannot delete yourself'}), 400
+        
+        # Get user
+        user = User.query.get(user_id)
+        if not user:
+            return jsonify({'error': 'User not found'}), 404
+        
+        # Check if user is root (cannot delete root)
+        has_referrer = Referral.query.filter_by(referred_id=user_id).first() is not None
+        if not has_referrer:
+            return jsonify({'error': 'Cannot delete root user'}), 400
+        
+        # Delete related data first
+        # Delete messages
+        Message.query.filter_by(sender_id=user_id).delete()
+        # Delete chats
+        Chat.query.filter((Chat.user1_id == user_id) | (Chat.user2_id == user_id)).delete()
+        # Delete matches
+        Match.query.filter((Match.user_id == user_id) | (Match.liked_user_id == user_id)).delete()
+        # Delete referrals (both as referrer and referred)
+        Referral.query.filter((Referral.referrer_id == user_id) | (Referral.referred_id == user_id)).delete()
+        
+        # Delete user
+        db.session.delete(user)
+        db.session.commit()
+        
+        return jsonify({
+            'message': 'User deleted successfully',
+            'user_id': user_id
+        }), 200
+        
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500
+
+
+@users_bp.route('/block/<int:user_id>', methods=['POST'])
+@jwt_required()
+def block_user(user_id):
+    """Block a user (unlike/block)"""
+    try:
+        current_user_id = get_current_user_id()
+        
+        if current_user_id == user_id:
+            return jsonify({'error': 'Cannot block yourself'}), 400
+        
+        # Check if user exists
+        target_user = User.query.get(user_id)
+        if not target_user:
+            return jsonify({'error': 'User not found'}), 404
+        
+        # Check if already blocked
+        existing_block = Block.query.filter_by(
+            blocker_id=current_user_id,
+            blocked_id=user_id
+        ).first()
+        
+        if existing_block:
+            return jsonify({'error': 'User already blocked'}), 400
+        
+        # Remove match if exists (unlike)
+        match = Match.query.filter_by(
+            user_id=current_user_id,
+            liked_user_id=user_id
+        ).first()
+        
+        if match:
+            # If mutual, also remove the mutual flag from reverse match
+            if match.is_mutual:
+                reverse_match = Match.query.filter_by(
+                    user_id=user_id,
+                    liked_user_id=current_user_id
+                ).first()
+                if reverse_match:
+                    reverse_match.is_mutual = False
+            
+            db.session.delete(match)
+        
+        # Create block
+        new_block = Block(
+            blocker_id=current_user_id,
+            blocked_id=user_id
+        )
+        
+        db.session.add(new_block)
+        db.session.commit()
+        
+        return jsonify({
+            'message': 'User blocked successfully'
+        }), 201
+        
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500
+
+
+@users_bp.route('/unblock/<int:user_id>', methods=['POST'])
+@jwt_required()
+def unblock_user(user_id):
+    """Unblock a user"""
+    try:
+        current_user_id = get_current_user_id()
+        
+        # Check if block exists
+        block = Block.query.filter_by(
+            blocker_id=current_user_id,
+            blocked_id=user_id
+        ).first()
+        
+        if not block:
+            return jsonify({'error': 'User is not blocked'}), 404
+        
+        # Remove block
+        db.session.delete(block)
+        db.session.commit()
+        
+        return jsonify({
+            'message': 'User unblocked successfully'
+        }), 200
+        
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500
+
+
+@users_bp.route('/blocked', methods=['GET'])
+@jwt_required()
+def get_blocked_users():
+    """Get all users blocked by current user"""
+    try:
+        current_user_id = get_current_user_id()
+        
+        # Get all blocks
+        blocks = Block.query.filter_by(blocker_id=current_user_id).all()
+        
+        blocked_users = []
+        for block in blocks:
+            user = User.query.get(block.blocked_id)
+            if user and not user.is_suspended:
+                try:
+                    user_dict = user.to_dict()
+                    user_dict['full_name'] = encryption_service.decrypt(user.full_name_encrypted)
+                    user_dict['profile_image'] = get_cloudinary_url(user.profile_image)
+                    user_dict['blocked_at'] = block.created_at.isoformat() if block.created_at else None
+                    blocked_users.append(user_dict)
+                except Exception as e:
+                    print(f"[GET BLOCKED] Error processing user {user.id}: {e}")
+                    continue
+        
+        return jsonify({'blocked_users': blocked_users}), 200
+        
+    except Exception as e:
         return jsonify({'error': str(e)}), 500
 
