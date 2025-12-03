@@ -160,37 +160,63 @@ def search_users():
         total_users = User.query.count()
         print(f"[SEARCH DEBUG] Total users in DB: {total_users}")
         print(f"[SEARCH DEBUG] Current user ID: {current_user_id}")
-        print(f"[SEARCH DEBUG] Filters - name: {name_search}, gender: {gender}, min_age: {min_age}, max_age: {max_age}, location: {location}")
+        print(f"[SEARCH DEBUG] Filters - name: '{name_search}', gender: {gender}, min_age: {min_age}, max_age: {max_age}, location: {location}")
         
-        # Apply filters
-        if gender:
-            users_query = users_query.filter(User.gender == gender)
-        
-        if min_age:
-            users_query = users_query.filter(User.age >= min_age)
-        
-        if max_age:
-            users_query = users_query.filter(User.age <= max_age)
-        
-        if location:
-            users_query = users_query.filter(User.location.ilike(f'%{location}%'))
-        
-        # Get all users first (for name search which requires decryption)
-        all_users = users_query.all()
-        
-        # Filter by name if provided (requires decryption)
+        # Filter by name if provided (requires decryption - must be done before other filters)
         if name_search:
-            name_search_lower = name_search.lower()
+            name_search_lower = name_search.lower().strip()
+            print(f"[SEARCH DEBUG] Searching for name: '{name_search_lower}'")
+            
+            # Get all users that match basic criteria (not suspended, not blocked, not current user)
+            base_query = User.query.filter(User.id != current_user_id).filter(User.is_suspended == False)
+            
+            # Exclude blocked users
+            if all_blocked_ids:
+                base_query = base_query.filter(~User.id.in_(all_blocked_ids))
+            
+            all_candidates = base_query.all()
+            print(f"[SEARCH DEBUG] Found {len(all_candidates)} candidate users before name filter")
+            
+            # Filter by name (decrypt and check)
             filtered_users = []
-            for user in all_users:
+            for user in all_candidates:
                 try:
                     full_name = encryption_service.decrypt(user.full_name_encrypted)
-                    if name_search_lower in full_name.lower():
+                    full_name_lower = full_name.lower()
+                    if name_search_lower in full_name_lower:
                         filtered_users.append(user)
+                        print(f"[SEARCH DEBUG] Match found: user {user.id} - '{full_name}' contains '{name_search_lower}'")
                 except Exception as e:
                     print(f"[SEARCH DEBUG] Error decrypting name for user {user.id}: {e}")
                     # Skip users with decryption errors
+            print(f"[SEARCH DEBUG] After name filter: {len(filtered_users)} users match")
             all_users = filtered_users
+            
+            # Now apply other filters on the name-filtered results
+            if gender:
+                all_users = [u for u in all_users if u.gender == gender]
+            if min_age:
+                all_users = [u for u in all_users if u.age and u.age >= min_age]
+            if max_age:
+                all_users = [u for u in all_users if u.age and u.age <= max_age]
+            if location:
+                location_lower = location.lower()
+                all_users = [u for u in all_users if u.location and location_lower in u.location.lower()]
+        else:
+            # No name search - apply filters normally using SQL query
+            if gender:
+                users_query = users_query.filter(User.gender == gender)
+            
+            if min_age:
+                users_query = users_query.filter(User.age >= min_age)
+            
+            if max_age:
+                users_query = users_query.filter(User.age <= max_age)
+            
+            if location:
+                users_query = users_query.filter(User.location.ilike(f'%{location}%'))
+            
+            all_users = users_query.all()
         
         # Pagination (manual since we filtered by name)
         total_filtered = len(all_users)
