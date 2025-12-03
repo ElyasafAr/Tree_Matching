@@ -301,10 +301,10 @@ const Admin = () => {
       )}
 
       {activeTab === 'stats' && (
-
-      {loadingStats ? (
-        <div className="loading">טוען סטטיסטיקות...</div>
-      ) : stats ? (
+        <>
+          {loadingStats ? (
+            <div className="loading">טוען סטטיסטיקות...</div>
+          ) : stats ? (
         <div className="admin-stats">
           <div className="stats-grid">
             <div className="stat-card">
@@ -373,11 +373,12 @@ const Admin = () => {
           )}
         </div>
       ) : (
-        <div className="admin-error">
-          <p>לא ניתן לטעון סטטיסטיקות</p>
-          <button onClick={loadStats} className="btn btn-primary">נסה שוב</button>
-        </div>
-      )}
+            <div className="admin-error">
+              <p>לא ניתן לטעון סטטיסטיקות</p>
+              <button onClick={loadStats} className="btn btn-primary">נסה שוב</button>
+            </div>
+          )}
+        </>
       )}
     </div>
   );
